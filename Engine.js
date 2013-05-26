@@ -557,7 +557,7 @@ function Board(name, carryover, meter) {
 
     //Draw the boat and check to 
     this.drawBoat = function() {
-        //console.log('in DrawBoat');
+        safePause = false;
         var x, y;
         switch (this.boat.state) {
             case 'up':
@@ -601,7 +601,6 @@ function Board(name, carryover, meter) {
             this.correctBoat();
             this.dropBoat();
         } else if (this.drop == 1) {
-            safePause = false;
             this.drop = 0;
             this.dropBoat();
         } else {
@@ -1317,7 +1316,7 @@ function Practice(name, carryover, meter) {
 
     //Draw the boat and check to 
     this.drawBoat = function() {
-        //console.log('in DrawBoat');
+        safePause = false;
         var x, y;
         switch (this.boat.state) {
             case 'up':
@@ -1362,7 +1361,6 @@ function Practice(name, carryover, meter) {
             this.dropBoat();
         } else if (this.drop == 1) {
             this.drop = 0;
-            safePause = false;
             this.dropBoat();
         } else {
             this.startAnimator();

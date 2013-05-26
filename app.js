@@ -309,13 +309,19 @@ function Queue() {
                 client.gameData.pausedId = client.id;
             };
         });
+        //Receive lost message from client
         client.on('lost', function (loser) {
+          //checks to see if the game is currently ending in case of close finishes
           if (client.gameData != null && !client.gameData.ending) {
+            //sets the game state as ending to prevent double restarts
             client.gameData.ending = true;
+            //pause both clients
             client.emit('reset', {} );
-            sio.sockets.socket(client.otherPlayer).emit('reset', {} );
+            sio.sockets.socket(client.otherPlayer).emit('reset', {} );	
+            //set up new queue for next game
             var temp = new Queue();
             client.gameData.queue = temp.queue;
+            //set rounds or win streak data send send start message to clients
             if (client.playerNumber == 0) {
                 client.gameData.secondPlayerRounds += 1;
             } else {
