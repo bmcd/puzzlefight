@@ -105,7 +105,6 @@ var startGame = function(queue) {
     paused = false;
     firstPlayerRounds = 0;
     secondPlayerRounds = 0;
-    console.log(clientId + " " + queue.firstPlayerId);
     if (clientId == queue.firstPlayerId) {
         firstPlayerWins = queue.firstPlayerWins;
         secondPlayerWins = queue.secondPlayerWins;
@@ -385,7 +384,6 @@ function Opponent() {
         this.boatContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
     };
     this.drawBoat = function(sentBoat) {
-        //console.log('in DrawBoat');
         this.clearBoat();
         this.waitingToFall = sentBoat.waitingToFall;
         this.boatContext.clearRect(0, 0, this.boatCanvas.width, this.boatCanvas.height);
@@ -615,7 +613,6 @@ function Board(name, carryover, meter) {
         this.drawBoat();
     };
     this.startAnimator = function() {
-        //console.log('in startAnimator');
         var inst = this;
         this.timeout = setTimeout(function() { inst.drawBoat(); }, boatFPS);
         safePause = true;
@@ -802,7 +799,6 @@ function Board(name, carryover, meter) {
     this.breakChain = function(row, column, theColor, first) {
         var i;
         var sameColor = [];
-        //console.log("Checking from " + this.getColor(row, column) + " at " + row + ", " + column);
         if (this.isNotNull(row + 1, column)) {
             if (this.isColor(row + 1, column, theColor)) {
                 sameColor.push([row + 1, column]);
@@ -1375,7 +1371,6 @@ function Practice(name, carryover, meter) {
         this.drawBoat();
     };
     this.startAnimator = function() {
-        //console.log('in startAnimator');
         var inst = this;
         this.timeout = setTimeout(function() { inst.drawBoat(); }, boatFPS);
         safePause = true;
@@ -1576,7 +1571,6 @@ function Practice(name, carryover, meter) {
     this.breakChain = function(row, column, theColor, first) {
         var i;
         var sameColor = [];
-        //console.log("Checking from " + this.getColor(row, column) + " at " + row + ", " + column);
         if (this.isNotNull(row + 1, column)) {
             if (this.isColor(row + 1, column, theColor)) {
                 sameColor.push([row + 1, column]);

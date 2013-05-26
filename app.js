@@ -159,6 +159,7 @@ function Queue() {
         client.otherPlayerNumber;
         client.otherPlayer;
         client.gameData;
+        client.inLobby = true;
  
             //tell the player they connected, giving them their id
         client.emit('onconnected', { id: client.id, gameList: games, playerList: players } );
@@ -169,18 +170,17 @@ function Queue() {
         
         client.on('createGame', function() {
             var i;
-            console.log("Received create request");
             for (i = 0; i < 22; i++) {
                 if (i == 21) { 
                     client.emit('alert', { message: 'Too many games. Try again later or join another game.' });
                 } else if (games[i] == "empty") {
-                    console.log("Creating game " + i);
                     client.playerNumber = 0;
                     client.gameNumber = i;
                     players.splice(players.indexOf(client.id), 1);
                     games[i] = [[client.id, false]];
                     client.emit('message', { message: 'Created Game ' + client.gameNumber });
                     client.emit('joinedGame', { gameNumber: client.gameNumber, playerNumber: client.playerNumber, practiceQueue: new Queue() });
+                    client.inLobby = false;
                     break;
                 };
             };
@@ -195,6 +195,7 @@ function Queue() {
                 players.splice(players.indexOf(client.id), 1);
                 client.emit('message', { message: 'Joined Game ' + client.gameNumber });
                 client.emit('joinedGame', { gameNumber: client.gameNumber, playerNumber: client.playerNumber, practiceQueue: new Queue() });
+                client.inLobby = false;
                 sio.sockets.socket(client.otherPlayer).otherPlayerNumber = 1;
                 sio.sockets.socket(client.otherPlayer).otherPlayer = client.id;
             } else {
@@ -204,7 +205,6 @@ function Queue() {
             
         client.on('ready', function(data) {
             games[client.gameNumber][client.playerNumber][1] = data.ready;
-            console.log(games[client.gameNumber][0][1]);
             if (games[client.gameNumber].length == 2 && games[client.gameNumber][0][1] && games[client.gameNumber][1][1]) {
                 client.emit('reset', {} );
                 sio.sockets.socket(client.otherPlayer).emit('reset', {} );
@@ -253,6 +253,7 @@ function Queue() {
                 sio.sockets.socket(client.otherPlayer).emit('reset', {} );
                 sio.sockets.socket(client.otherPlayer).emit('onconnected', { id: client.userid, gameList: games, playerList: players } );
                 sio.sockets.socket(client.otherPlayer).emit('alert', { message: 'Other player disconnected.'});
+                sio.sockets.socket(client.otherPlayer).inLobby = true;
             } else {
                 players.splice(players.indexOf(client.id), 1);
             };
@@ -301,7 +302,9 @@ function Queue() {
         });
         client.on('tab', function (sent) {
             if (sent.practice && !sent.paused) {
-                client.emit('pausePractice', {});
+                if (!client.inLobby) {
+                    client.emit('pausePractice', {});
+                };
             } else if (client.gameData != null && !client.gameData.paused) {
                 sio.sockets.socket(client.otherPlayer).emit('pauseGame', {});
                 client.emit('pauseGame', {});

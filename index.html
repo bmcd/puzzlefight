@@ -22,7 +22,6 @@
  
 					//Note that the data is the object we sent from the server, as is. So we can assume its id exists. 
 		  		console.log( 'Connected successfully to the socket.io server. My server side ID is ' + data.id );
-                                console.log('Git works now one time please');
 		  		clientId = data.id;
 		  		drawLobby(data);
 		  	});
@@ -68,27 +67,21 @@
 		  	    firstPlayer.receiveBlocks(blocks.number);
 		  	});
 		  	socket.on('boat', function(sent) {
-		  	    console.log('Received boat');
 		  	    opponent.drawBoat(sent);
 		  	});
 		  	socket.on('waiting', function(sent) {
-		  	    console.log('Received waiting');
 		  	    opponent.drawWaiting(sent);
 		  	});
 		  	socket.on('grid', function(sent) {
-		  	    console.log('Received grid');
 		  	    opponent.drawGrid(sent);
 		  	});
 		  	var joinGame = function(number) {
-            console.log("join");
             socket.emit('joinGame', { gameNumber: number });
         };
         var createGame = function() {
-            console.log("create");
             socket.emit('createGame', {});
         };
         var refresh = function() {
-            console.log("refresh");
             socket.emit('refresh', {});
         };
 				//Now we can listen for that event
@@ -139,7 +132,7 @@
 <button id="createGameButton" type="button" style="position: absolute; top: 650px; left: 90px;">Create New Game</button>
 <button id="refresh" type="button" style="position: absolute; top: 650px; left: 210px;">Refresh List</button>
 <script type="text/javascript">
-    document.getElementById("0").addEventListener("click", function() { console.log("join"); joinGame(0);});
+    document.getElementById("0").addEventListener("click", function() { joinGame(0);});
     document.getElementById("1").addEventListener("click", function() { joinGame(1);});
     document.getElementById("2").addEventListener("click", function() { joinGame(2);});
     document.getElementById("3").addEventListener("click", function() { joinGame(3);});
