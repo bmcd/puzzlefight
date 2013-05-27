@@ -148,6 +148,7 @@ var startSpectating = function(data) {
     firstPlayerWins = data.firstPlayerWins;
     secondPlayerWins = data.secondPlayerWins;
     theQueue = new Queue(data.queue);
+    drawRounds();
 };
 
 
