@@ -10,3 +10,5 @@
     //setInterval(secondPlayer.drawEverything, 33);
     //firstPlayer.clearGrid();
 //};
+firstPlayer = new Opponent('A');
+secondPlayer = new Opponent('B');

@@ -27,7 +27,16 @@
 		  	});
 		  	socket.on('joinedGame', function(data) {
 		  	    clearLobby();
-		  	    startPractice(data);
+		  	    if (data.spectating) {
+		  	        spectating = true;
+		  	        startSpectating(data);
+		  	    } else {
+		  	        playerNumber = data.playerNumber;
+		  	        startPractice(data);
+		  	    };
+		  	});
+		  	socket.on('startSpec', function(data) {
+		  	    startSpectating(data);
 		  	});
 		  	socket.on('first', function(queue) {
 		  	    startGame(queue);
@@ -42,6 +51,16 @@
 		  	});
 		  	socket.on('reset', function() {
 		  	    endGame();
+		  	});
+		  	socket.on('yourTurn', function(data) {
+		  	    joinGame(data.gameNumber);
+		  	});
+		  	socket.on('kicked', function() {
+		  	    alert('Game ended');
+		  	    refresh();
+		  	});
+		  	socket.on('createdGame', function(data) {
+		  	    joinGame(data.gameNumber);
 		  	});
 		  	socket.on('pausePractice', function(data) {
 		  	    clearTimeout(firstPlayer.timeout); 
@@ -75,7 +94,28 @@
 		  	socket.on('grid', function(sent) {
 		  	    opponent.drawGrid(sent);
 		  	});
-		  	var joinGame = function(number) {
+		  	socket.on('specBoat', function(sent) {
+		  	    if (sent.playerNumber == 0) {
+		  	        firstPlayer.drawBoat(sent);
+		  	    } else {
+		  	        secondPlayer.drawBoat(sent);
+		  	    };
+		  	});
+		  	socket.on('specWaiting', function(sent) {
+		  	    if (sent.playerNumber == 0) {
+		  	        firstPlayer.drawWaiting(sent);
+		  	    } else {
+		  	        secondPlayer.drawWaiting(sent);
+		  	    };
+		  	});
+		  	socket.on('specGrid', function(sent) {
+		  	    if (sent.playerNumber == 0) {
+		  	        firstPlayer.drawGrid(sent);
+		  	    } else {
+		  	        secondPlayer.drawGrid(sent);
+		  	    };
+		  	});
+		var joinGame = function(number) {
             socket.emit('joinGame', { gameNumber: number });
         };
         var createGame = function() {

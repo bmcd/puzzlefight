@@ -27,6 +27,8 @@ var inPractice = true;
 var paused = false;
 var warningLine = '#E67E22';
 var safePause = true;
+var playerNumber;
+var spectating = false;
     
 var pauseGame = function() {
     if (safePause) { 
@@ -92,7 +94,7 @@ var startPractice = function(data) {
     theQueue = new Queue(data.practiceQueue.queue);
     firstPlayer = new Practice('A', 0, 0);
     //secondPlayer = new Board('B', 0, 0);
-    opponent = new Opponent();
+    opponent = new Opponent('B');
     firstPlayer.startGame();
     //secondPlayer.startGame();
 };
@@ -105,7 +107,7 @@ var startGame = function(queue) {
     paused = false;
     firstPlayerRounds = 0;
     secondPlayerRounds = 0;
-    if (clientId == queue.firstPlayerId) {
+    if (playerNumber == 0) {
         firstPlayerWins = queue.firstPlayerWins;
         secondPlayerWins = queue.secondPlayerWins;
     } else {
@@ -116,7 +118,7 @@ var startGame = function(queue) {
     theQueue = new Queue(queue.queue);
     firstPlayer = new Board('A', 0, 0);
     //secondPlayer = new Board('B', 0, 0);
-    opponent = new Opponent();
+    opponent = new Opponent('B');
     setTimeout(function() { firstPlayer.startGame(); }, 3000);
     //secondPlayer.startGame();
 };
@@ -125,7 +127,7 @@ var restartGame = function(queue) {
     //var aSuper = firstPlayer.superMeter;
     //var bPoints = secondPlayer.points;
     //var bSuper = secondPlayer.superMeter;
-    if (clientId == queue.firstPlayerId) {
+    if (playerNumber == 0) {
         firstPlayerRounds = queue.firstPlayerRounds;
         secondPlayerRounds = queue.secondPlayerRounds;
     } else {
@@ -140,9 +142,17 @@ var restartGame = function(queue) {
     setTimeout(function() { firstPlayer.startGame(); }, 5000);
     //secondPlayer.startGame();
 };
+var startSpectating = function(data) {
+    firstPlayerRounds = data.firstPlayerRounds;
+    secondPlayerRounds = data.secondPlayerRounds;
+    firstPlayerWins = data.firstPlayerWins;
+    secondPlayerWins = data.secondPlayerWins;
+    theQueue = new Queue(data.queue);
+};
+
 
 var sendBlocks = function(blocks) {
-    socket.emit('blocks', { number: blocks });
+    socket.emit('blocks', { number: blocks, playerNumber: playerNumber });
 };
 var endGame = function() {
     if (safePause) { 
@@ -174,7 +184,7 @@ yellowBreaker.src = "images/yellowBreaker.png";
 var bombBomb = new Image();
 bombBomb.src = "images/nuke.png";
 
-window.addEventListener("blur", function(event) { socket.emit('tab', { practice: inPractice, paused: paused }); }, false);
+//window.addEventListener("blur", function(event) { socket.emit('tab', { practice: inPractice, paused: paused }); }, false);
 
 document.onkeydown = function(evt) {
     evt = evt || window.event;
@@ -260,8 +270,9 @@ var createBomb = function() {
 
 
 
-function Opponent() {
+function Opponent(player) {
     this.grid = [];
+    this.player = player;
     this.count = 0;
     this.drop = 0;
     //Point variables
@@ -270,11 +281,11 @@ function Opponent() {
     this.superMeter = 0;
     this.message = " ";
     this.boat = {};
-    this.canvas = document.getElementById('playerB');
+    this.canvas = document.getElementById('player' + this.player);
     this.context = this.canvas.getContext('2d');
-    this.waitingCanvas = document.getElementById('playerBWaiting');
+    this.waitingCanvas = document.getElementById('player' + this.player + 'Waiting');
     this.waitingContext = this.waitingCanvas.getContext('2d');
-    this.boatCanvas = document.getElementById('playerBBoat');
+    this.boatCanvas = document.getElementById('player' + this.player + 'Boat');
     this.boatContext = this.boatCanvas.getContext('2d');
     this.isNull = function(row, column) {
         return this.grid[row][column] == null;
@@ -348,6 +359,32 @@ function Opponent() {
         this.message = sent.message;
         this.superMeter = sent.superMeter;
         this.waitingContext.clearRect(0, 0, this.waitingCanvas.width, this.waitingCanvas.height);
+        if (this.player == "A") {
+            this.waitingContext.fillStyle = 'black';
+            this.waitingContext.lineWidth = 1;
+            this.waitingContext.drawImage(window[theQueue.getNextColor(this.count + 3) + theQueue.getNextBreaker(this.count + 3)], 0, 40);
+            this.waitingContext.drawImage(window[theQueue.getNextColor(this.count + 2) + theQueue.getNextBreaker(this.count + 2)], 0, 80);
+            this.waitingContext.font = "bold 14px sans-serif";
+            this.waitingContext.fill();
+            this.waitingContext.fillStyle = 'white';
+            this.waitingContext.fillText('Points', 0, 160);
+            this.waitingContext.fillText(this.points, 0, 180);
+            this.waitingContext.fill();
+            this.waitingContext.fillStyle = '#F39C12';
+            this.waitingContext.fillRect(2, 380 - 180 * (this.superMeter / superMax) , 15, 180 * (this.superMeter / superMax));
+            this.waitingContext.fill();
+            this.waitingContext.lineWidth = 3;
+            this.waitingContext.strokeRect(2, 200, 15, 180);
+            this.waitingContext.stroke();
+            this.waitingContext.fillStyle = 'white';
+            this.waitingContext.fillText(this.message, 0, 460);
+            if (firstPlayerWins > 0) { this.waitingContext.fillText('WINS: ' + firstPlayerWins, 0, 560); };
+            this.waitingContext.fillText('S', 4, 230);
+            this.waitingContext.fillText('U', 4, 260);
+            this.waitingContext.fillText('P', 4, 290);
+            this.waitingContext.fillText('E', 4, 320);
+            this.waitingContext.fillText('R', 4, 350);
+        } else {
             this.waitingContext.fillStyle = 'black';
             this.waitingContext.lineWidth = 1;
             this.waitingContext.drawImage(window[theQueue.getNextColor(this.count + 3) + theQueue.getNextBreaker(this.count + 3)], this.waitingCanvas.width - 40, 40);
@@ -373,6 +410,7 @@ function Opponent() {
             this.waitingContext.fillText('P', this.waitingCanvas.width - 6, 290);
             this.waitingContext.fillText('E', this.waitingCanvas.width - 6, 320);
             this.waitingContext.fillText('R', this.waitingCanvas.width - 6, 350);
+        };
     };
 
 
@@ -397,6 +435,7 @@ function Opponent() {
         }
     };
 };
+
 
 //Board and Grid stuff
 
@@ -500,7 +539,7 @@ function Board(name, carryover, meter) {
         this.context.lineTo(0, 0);
         this.context.strokeStyle = '#000000';
         this.context.stroke();
-        socket.emit('grid', { grid: firstPlayer.grid });
+        socket.emit('grid', { grid: firstPlayer.grid, playerNumber: playerNumber });
         for (i = 1; i < 16; i++) {
             for (j = 1; j < 9; j++) {
                 if (this.isNotNull(i, j)) {
@@ -517,7 +556,7 @@ function Board(name, carryover, meter) {
             this.superReady = true;
         }
         this.waitingContext.clearRect(0, 0, this.waitingCanvas.width, this.waitingCanvas.height);
-        socket.emit('waiting', { count: this.count, points: this.points, message: this.message, superMeter: this.superMeter});
+        socket.emit('waiting', { count: this.count, points: this.points, message: this.message, superMeter: this.superMeter, playerNumber: playerNumber });
             this.waitingContext.fillStyle = 'black';
             this.waitingContext.lineWidth = 1;
             this.waitingContext.drawImage(window[theQueue.getNextColor(this.count + 3) + theQueue.getNextBreaker(this.count + 3)], 0, 40);
@@ -584,7 +623,7 @@ function Board(name, carryover, meter) {
 	    var sendX = this.boat.positionX;
 	    var sendY = this.boat.positionY;
 	    var sendWaiting = this.waitingToFall;
-	    socket.emit('boat', { bottomArray: [bottomColor, bottomBreaker, sendX, sendY], topArray: [topColor, topBreaker, x, y], waitingToFall: sendWaiting });
+	    socket.emit('boat', { bottomArray: [bottomColor, bottomBreaker, sendX, sendY], topArray: [topColor, topBreaker, x, y], waitingToFall: sendWaiting, playerNumber: playerNumber });
         this.boatContext.clearRect(0, 0, this.boatCanvas.width, this.boatCanvas.height);
         this.boatContext.drawImage(bottomImage, this.boat.positionX, this.boat.positionY);
         this.boatContext.drawImage(topImage, x, y);
@@ -1255,7 +1294,7 @@ function Practice(name, carryover, meter) {
         this.context.lineTo(0, 0);
         this.context.strokeStyle = '#000000';
         this.context.stroke();
-        socket.emit('grid', { grid: firstPlayer.grid });
+        socket.emit('grid', { grid: firstPlayer.grid, playerNumber: playerNumber });
         for (i = 1; i < 16; i++) {
             for (j = 1; j < 9; j++) {
                 if (this.isNotNull(i, j)) {
@@ -1272,7 +1311,7 @@ function Practice(name, carryover, meter) {
             this.superReady = true;
         }
         this.waitingContext.clearRect(0, 0, this.waitingCanvas.width, this.waitingCanvas.height);
-        socket.emit('waiting', { count: this.count, points: this.points, message: this.message, superMeter: this.superMeter });
+        socket.emit('waiting', { count: this.count, points: this.points, message: this.message, superMeter: this.superMeter, playerNumber: playerNumber });
             this.waitingContext.fillStyle = 'black';
             this.waitingContext.lineWidth = 1;
             this.waitingContext.drawImage(window[theQueue.getNextColor(this.count + 3) + theQueue.getNextBreaker(this.count + 3)], 0, 40);
@@ -1341,7 +1380,7 @@ function Practice(name, carryover, meter) {
 	    var sendX = this.boat.positionX;
 	    var sendY = this.boat.positionY;
 	    var sendWaiting = this.waitingToFall;
-	    socket.emit('boat', { bottomArray: [bottomColor, bottomBreaker, sendX, sendY], topArray: [topColor, topBreaker, x, y], waitingToFall: sendWaiting });
+	    socket.emit('boat', { bottomArray: [bottomColor, bottomBreaker, sendX, sendY], topArray: [topColor, topBreaker, x, y], waitingToFall: sendWaiting, playerNumber: playerNumber });
         this.boatContext.clearRect(0, 0, this.boatCanvas.width, this.boatCanvas.height);
         this.boatContext.drawImage(bottomImage, this.boat.positionX, this.boat.positionY);
         this.boatContext.drawImage(topImage, x, y);
