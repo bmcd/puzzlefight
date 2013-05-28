@@ -29,6 +29,7 @@ var warningLine = '#E67E22';
 var safePause = true;
 var playerNumber;
 var spectating = false;
+var blockHeight = 40;
     
 var pauseGame = function() {
     if (safePause) { 
@@ -186,7 +187,7 @@ yellowBreaker.src = "images/yellowBreaker.png";
 var bombBomb = new Image();
 bombBomb.src = "images/nuke.png";
 
-window.addEventListener("blur", function(event) { socket.emit('tab', { practice: inPractice, paused: paused }); }, false);
+//window.addEventListener("blur", function(event) { socket.emit('tab', { practice: inPractice, paused: paused }); }, false);
 
 document.onkeydown = function(evt) {
     evt = evt || window.event;
@@ -1246,7 +1247,7 @@ function Practice(name, carryover, meter) {
         return this.grid[row][column].color;
     };
     this.isBreaker = function(row, column) {
-        return this.grid[row][column].breaker == 'Breaker';
+        return this.grid[row][column].breaker;
     };
     this.getBreaker = function(row, column) {
         return this.grid[row][column].breaker;
@@ -1258,7 +1259,7 @@ function Practice(name, carryover, meter) {
         this.grid[row][column] = null;
     };
     this.makeFlash = function(row, column) {
-        this.grid[row][column] = new Block('white', 'Block');
+        this.grid[row][column] = new Block('white', false);
     };
     this.isNotFlash = function(row, column) {
         return this.grid[row][column].color !== 'white';
@@ -1296,11 +1297,23 @@ function Practice(name, carryover, meter) {
         this.context.lineTo(0, 0);
         this.context.strokeStyle = '#000000';
         this.context.stroke();
+        this.context.closePath();
         socket.emit('grid', { grid: firstPlayer.grid, playerNumber: playerNumber });
         for (i = 1; i < 16; i++) {
             for (j = 1; j < 9; j++) {
                 if (this.isNotNull(i, j)) {
-                    this.context.drawImage(window[this.getColor(i, j) + this.getBreaker(i, j)], (j - 1) * 40, 530 - i * 40);
+                    this.context.fillStyle = this.getColor(i, j);
+                    if (this.getBreaker(i, j)) {
+                        this.context.beginPath();
+                        this.context.arc((j - 0.5) * blockHeight, this.canvas.height - (i - 0.5) * blockHeight, blockHeight / 2.0, 0, Math.PI * 2, false);
+                        this.context.fill();
+                        this.context.closePath();
+                        //this.waitingContext.stroke();
+                        
+                    } else {
+                        this.context.fillRect((j - 1) * blockHeight, 530 - i * blockHeight, blockHeight, blockHeight);
+                    };
+                        
                 }
             }
         }
@@ -1316,8 +1329,12 @@ function Practice(name, carryover, meter) {
         socket.emit('waiting', { count: this.count, points: this.points, message: this.message, superMeter: this.superMeter, playerNumber: playerNumber });
             this.waitingContext.fillStyle = 'black';
             this.waitingContext.lineWidth = 1;
-            this.waitingContext.drawImage(window[theQueue.getNextColor(this.count + 3) + theQueue.getNextBreaker(this.count + 3)], 0, 40);
-            this.waitingContext.drawImage(window[theQueue.getNextColor(this.count + 2) + theQueue.getNextBreaker(this.count + 2)], 0, 80);
+            
+            
+                    this.waitingContext.strokeStyle = 'black';
+            //this.waitingContext.drawImage(window[theQueue.getNextColor(this.count + 3) + theQueue.getNextBreaker(this.count + 3)], 0, 40);
+            //this.waitingContext.drawImage(window[theQueue.getNextColor(this.count + 2) + theQueue.getNextBreaker(this.count + 2)], 0, 80);
+            this.waitingContext.beginPath();
             this.waitingContext.font = "bold 14px sans-serif";
             this.waitingContext.fill();
             this.waitingContext.fillStyle = 'white';
@@ -1330,6 +1347,7 @@ function Practice(name, carryover, meter) {
             this.waitingContext.lineWidth = 3;
             this.waitingContext.strokeRect(2, 200, 15, 180);
             this.waitingContext.stroke();
+            this.waitingContext.closePath();
             this.waitingContext.fillStyle = 'white';
             this.waitingContext.fillText('PRACTICE MODE', 0, 450);
             this.waitingContext.fillText(this.message, 0, 470);
@@ -1338,6 +1356,35 @@ function Practice(name, carryover, meter) {
             this.waitingContext.fillText('P', 4, 290);
             this.waitingContext.fillText('E', 4, 320);
             this.waitingContext.fillText('R', 4, 350);
+            this.waitingContext.fillStyle = theQueue.getNextColor(this.count + 3);
+                    console.log(theQueue.getNextBreaker(this.count + 3));
+                    if (theQueue.getNextBreaker(this.count + 3)) {
+                        //this.waitingContext.fillRect(0, blockHeight, blockHeight / 2.0, blockHeight / 2.0);
+                        this.waitingContext.beginPath();
+                        this.waitingContext.arc(20, 60, 20, 0, Math.PI * 2, false);
+                        //this.waitingContext.strokeStyle = '#A4B231';
+                        //this.waitingContext.stroke();
+                        this.waitingContext.fill();
+                        this.waitingContext.closePath();
+                        
+                        //this.waitingContext.fill();
+                    } else {
+                        this.waitingContext.fillRect(0, blockHeight, blockHeight, blockHeight);
+                    };
+            this.waitingContext.fillStyle = theQueue.getNextColor(this.count + 2);
+                    if (theQueue.getNextBreaker(this.count + 2)) {
+                        this.waitingContext.beginPath();
+                        this.waitingContext.arc(20, 100, 20, 0, Math.PI * 2, false);
+                        //this.waitingContext.strokeStyle = '#A4B231';
+                        //this.waitingContext.stroke();
+                        this.waitingContext.fill();
+                        this.waitingContext.closePath();
+                        //this.waitingContext.stroke();
+                        //
+                    } else {
+                        this.waitingContext.fillRect(0, blockHeight * 2, blockHeight, blockHeight);
+                    };
+            
             
         
     };
@@ -1373,8 +1420,8 @@ function Practice(name, carryover, meter) {
 	            y = this.boat.positionY;
 	            break;
 	    }
-	    var bottomImage = window[this.boat.getBottomColor() + this.boat.getBottomBreaker()];
-	    var topImage = window[this.boat.getTopColor() + this.boat.getTopBreaker()]
+	    //var bottomImage = window[this.boat.getBottomColor() + this.boat.getBottomBreaker()];
+	    //var topImage = window[this.boat.getTopColor() + this.boat.getTopBreaker()]
 	    var topColor = this.boat.getTopColor();
 	    var topBreaker = this.boat.getTopBreaker();
 	    var bottomColor = this.boat.getBottomColor();
@@ -1384,8 +1431,30 @@ function Practice(name, carryover, meter) {
 	    var sendWaiting = this.waitingToFall;
 	    socket.emit('boat', { bottomArray: [bottomColor, bottomBreaker, sendX, sendY], topArray: [topColor, topBreaker, x, y], waitingToFall: sendWaiting, playerNumber: playerNumber });
         this.boatContext.clearRect(0, 0, this.boatCanvas.width, this.boatCanvas.height);
-        this.boatContext.drawImage(bottomImage, this.boat.positionX, this.boat.positionY);
-        this.boatContext.drawImage(topImage, x, y);
+        this.boatContext.fillStyle = bottomColor;
+        if (bottomBreaker) {
+            this.boatContext.beginPath();
+            this.boatContext.arc(this.boat.positionX + blockHeight * 0.5, this.boat.positionY + blockHeight * 0.5, blockHeight / 2.0, 0, Math.PI * 2, false);
+            this.boatContext.fill();
+            this.boatContext.closePath();
+                        //this.waitingContext.stroke();
+                        
+        } else {
+            this.boatContext.fillRect(this.boat.positionX, this.boat.positionY, blockHeight, blockHeight);
+        };
+        this.boatContext.fillStyle = topColor;
+        if (topBreaker) {
+            this.boatContext.beginPath();
+            this.boatContext.arc(x + blockHeight * 0.5, y + blockHeight * 0.5, blockHeight / 2.0, 0, Math.PI * 2, false);
+            this.boatContext.fill();
+            this.boatContext.closePath();
+                        //this.waitingContext.stroke();
+                        
+        } else {
+            this.boatContext.fillRect(x, y, blockHeight, blockHeight);
+        };
+        //this.boatContext.drawImage(bottomImage, this.boat.positionX, this.boat.positionY);
+        //this.boatContext.drawImage(topImage, x, y);
         if (this.waitingToFall > 0) {
             this.boatContext.font = "bold 18px sans-serif";
             this.boatContext.fillStyle = '#FFFFFF';

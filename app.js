@@ -66,7 +66,7 @@ var firstPlayerId, secondPlayerId;
 
 //Picks random color. Returns color as a string.
 var chooseColor = function() {
-    var colors = ['red', 'blue', 'green', 'yellow'];
+    var colors = ['#C0392B', '#2980B9', '#27AE60', '#F1C40F'];
     return colors[Math.floor(Math.random() * colors.length)];
 };
 
@@ -74,9 +74,9 @@ var chooseColor = function() {
 var chooseBreaker = function() {
     var type;
     if (Math.random() < breakerChance) {
-        type = 'Breaker';
+        type = true;
     } else {
-        type = 'Block';
+        type = false;
     }
     return type;
 };
@@ -93,7 +93,7 @@ var createBlockForPlayer = function() {
 };
 //Block creator for fall (Breakers not possible)
 var createBlockForFall = function() {
-    return new Block(chooseColor(), 'Block');
+    return new Block(chooseColor(), false);
 };
 var createBomb = function() {
     return new Block('bomb', 'Bomb');

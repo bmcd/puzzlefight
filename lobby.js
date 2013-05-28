@@ -12,7 +12,7 @@
                 lobbyContext.font = "bold 24px sans-serif";
                 var len = games[i].length;
                 if (len >= 2) { len = 2; };
-                lobbyContext.fillText('Game ' + (i) + ' ' + len + ' / 2 players', 80, i * 30 + 30);
+                lobbyContext.fillText('Game ' + (i) + ' ' + len + ' / 2 players', 80, i * 30 + 50);
                 lobbyContext.fill();
                 document.getElementById(i.toString()).style.display='block';
             };
