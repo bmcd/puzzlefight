@@ -238,7 +238,7 @@ document.onkeyup = function(evt) {
 
 //Picks random color. Returns color as a string.
 var chooseColor = function() {
-    var colors = ['red', 'blue', 'green', 'yellow'];
+    var colors = ['#C0392B', '#2980B9', '#27AE60', '#F1C40F'];
     return colors[Math.floor(Math.random() * colors.length)];
 };
 
@@ -246,9 +246,9 @@ var chooseColor = function() {
 var chooseBreaker = function() {
     var type;
     if (Math.random() < breakerChance) {
-        type = 'Breaker';
+        type = true;
     } else {
-        type = 'Block';
+        type = false;
     }
     return type;
 };
@@ -265,7 +265,7 @@ var createBlockForPlayer = function() {
 };
 //Block creator for fall (Breakers not possible)
 var createBlockForFall = function() {
-    return new Block(chooseColor(), 'Block');
+    return new Block(chooseColor(), false);
 };
 var createBomb = function() {
     return new Block('bomb', 'Bomb');
@@ -303,7 +303,7 @@ function Opponent(player) {
         return this.grid[row][column].color;
     };
     this.isBreaker = function(row, column) {
-        return this.grid[row][column].breaker == 'Breaker';
+        return this.grid[row][column].breaker;
     };
     this.getBreaker = function(row, column) {
         return this.grid[row][column].breaker;
@@ -315,7 +315,7 @@ function Opponent(player) {
         this.grid[row][column] = null;
     };
     this.makeFlash = function(row, column) {
-        this.grid[row][column] = new Block('white', 'Block');
+        this.grid[row][column] = new Block('white', false);
     };
     this.isNotFlash = function(row, column) {
         return this.grid[row][column].color !== 'white';
@@ -337,6 +337,7 @@ function Opponent(player) {
         this.context.strokeStyle = warningLine;
         this.context.lineWidth = 2;
         this.context.stroke();
+        this.context.closePath();
         this.context.beginPath();
         this.context.lineWidth = 1;
         this.context.moveTo(0, 0);
@@ -346,10 +347,21 @@ function Opponent(player) {
         this.context.lineTo(0, 0);
         this.context.strokeStyle = '#000000';
         this.context.stroke();
+        this.context.closePath();
         for (i = 1; i < 16; i++) {
             for (j = 1; j < 9; j++) {
                 if (this.isNotNull(i, j)) {
-                    this.context.drawImage(window[this.getColor(i, j) + this.getBreaker(i, j)], (j - 1) * 40, 530 - i * 40);
+                    this.context.fillStyle = this.getColor(i, j);
+                    if (this.getBreaker(i, j)) {
+                        this.context.beginPath();
+                        this.context.arc((j - 0.5) * blockHeight, this.canvas.height - (i - 0.5) * blockHeight, blockHeight / 2.0, 0, Math.PI * 2, false);
+                        this.context.fill();
+                        this.context.closePath();
+                        //this.waitingContext.stroke();
+                        
+                    } else {
+                        this.context.fillRect((j - 1) * blockHeight, 530 - i * blockHeight, blockHeight, blockHeight);
+                    };
                 }
             }
         }
@@ -365,8 +377,9 @@ function Opponent(player) {
         if (this.player == "A") {
             this.waitingContext.fillStyle = 'black';
             this.waitingContext.lineWidth = 1;
-            this.waitingContext.drawImage(window[theQueue.getNextColor(this.count + 3) + theQueue.getNextBreaker(this.count + 3)], 0, 40);
-            this.waitingContext.drawImage(window[theQueue.getNextColor(this.count + 2) + theQueue.getNextBreaker(this.count + 2)], 0, 80);
+            //this.waitingContext.drawImage(window[theQueue.getNextColor(this.count + 3) + theQueue.getNextBreaker(this.count + 3)], 0, 40);
+            //this.waitingContext.drawImage(window[theQueue.getNextColor(this.count + 2) + theQueue.getNextBreaker(this.count + 2)], 0, 80);
+            this.waitingContext.beginPath();
             this.waitingContext.font = "bold 14px sans-serif";
             this.waitingContext.fill();
             this.waitingContext.fillStyle = 'white';
@@ -379,6 +392,7 @@ function Opponent(player) {
             this.waitingContext.lineWidth = 3;
             this.waitingContext.strokeRect(2, 200, 15, 180);
             this.waitingContext.stroke();
+            this.waitingContext.closePath();
             this.waitingContext.fillStyle = 'white';
             this.waitingContext.fillText(this.message, 0, 460);
             if (firstPlayerWins > 0) { this.waitingContext.fillText('WINS: ' + firstPlayerWins, 0, 560); };
@@ -387,11 +401,40 @@ function Opponent(player) {
             this.waitingContext.fillText('P', 4, 290);
             this.waitingContext.fillText('E', 4, 320);
             this.waitingContext.fillText('R', 4, 350);
+            this.waitingContext.fillStyle = theQueue.getNextColor(this.count + 3);
+                    console.log(theQueue.getNextBreaker(this.count + 3));
+                    if (theQueue.getNextBreaker(this.count + 3)) {
+                        //this.waitingContext.fillRect(0, blockHeight, blockHeight / 2.0, blockHeight / 2.0);
+                        this.waitingContext.beginPath();
+                        this.waitingContext.arc(blockHeight * 0.5, blockHeight * 1.5, blockHeight * 0.5, 0, Math.PI * 2, false);
+                        //this.waitingContext.strokeStyle = '#A4B231';
+                        //this.waitingContext.stroke();
+                        this.waitingContext.fill();
+                        this.waitingContext.closePath();
+                        
+                        //this.waitingContext.fill();
+                    } else {
+                        this.waitingContext.fillRect(0, blockHeight, blockHeight, blockHeight);
+                    };
+            this.waitingContext.fillStyle = theQueue.getNextColor(this.count + 2);
+                    if (theQueue.getNextBreaker(this.count + 2)) {
+                        this.waitingContext.beginPath();
+                        this.waitingContext.arc(blockHeight * 0.5, blockHeight * 2.5, blockHeight * 0.5, 0, Math.PI * 2, false);
+                        //this.waitingContext.strokeStyle = '#A4B231';
+                        //this.waitingContext.stroke();
+                        this.waitingContext.fill();
+                        this.waitingContext.closePath();
+                        //this.waitingContext.stroke();
+                        //
+                    } else {
+                        this.waitingContext.fillRect(0, blockHeight * 2, blockHeight, blockHeight);
+                    };
         } else {
             this.waitingContext.fillStyle = 'black';
             this.waitingContext.lineWidth = 1;
-            this.waitingContext.drawImage(window[theQueue.getNextColor(this.count + 3) + theQueue.getNextBreaker(this.count + 3)], this.waitingCanvas.width - 40, 40);
-            this.waitingContext.drawImage(window[theQueue.getNextColor(this.count + 2) + theQueue.getNextBreaker(this.count + 2)], this.waitingCanvas.width - 40, 80);
+            //this.waitingContext.drawImage(window[theQueue.getNextColor(this.count + 3) + theQueue.getNextBreaker(this.count + 3)], this.waitingCanvas.width - 40, 40);
+            //this.waitingContext.drawImage(window[theQueue.getNextColor(this.count + 2) + theQueue.getNextBreaker(this.count + 2)], this.waitingCanvas.width - 40, 80);
+            this.waitingContext.beginPath();
             this.waitingContext.font = "bold 14px sans-serif";
             this.waitingContext.textAlign = 'right';
             this.waitingContext.fill();
@@ -405,6 +448,7 @@ function Opponent(player) {
             this.waitingContext.lineWidth = 3;
             this.waitingContext.strokeRect(this.waitingCanvas.width - 17, 200, 15, 180);
             this.waitingContext.stroke();
+            this.waitingContext.closePath();
             this.waitingContext.fillStyle = 'white';
             this.waitingContext.fillText(this.message, this.waitingCanvas.width, 460);
             if (secondPlayerWins > 0) { this.waitingContext.fillText('WINS: ' + secondPlayerWins, this.waitingCanvas.width, 560); };
@@ -413,6 +457,34 @@ function Opponent(player) {
             this.waitingContext.fillText('P', this.waitingCanvas.width - 6, 290);
             this.waitingContext.fillText('E', this.waitingCanvas.width - 6, 320);
             this.waitingContext.fillText('R', this.waitingCanvas.width - 6, 350);
+            this.waitingContext.fillStyle = theQueue.getNextColor(this.count + 3);
+                    console.log(theQueue.getNextBreaker(this.count + 3));
+                    if (theQueue.getNextBreaker(this.count + 3)) {
+                        //this.waitingContext.fillRect(0, blockHeight, blockHeight / 2.0, blockHeight / 2.0);
+                        this.waitingContext.beginPath();
+                        this.waitingContext.arc(this.waitingCanvas.width - blockHeight * 0.5, blockHeight * 1.5, blockHeight * 0.5, 0, Math.PI * 2, false);
+                        //this.waitingContext.strokeStyle = '#A4B231';
+                        //this.waitingContext.stroke();
+                        this.waitingContext.fill();
+                        this.waitingContext.closePath();
+                        
+                        //this.waitingContext.fill();
+                    } else {
+                        this.waitingContext.fillRect(this.waitingCanvas.width - blockHeight, blockHeight, blockHeight, blockHeight);
+                    };
+            this.waitingContext.fillStyle = theQueue.getNextColor(this.count + 2);
+                    if (theQueue.getNextBreaker(this.count + 2)) {
+                        this.waitingContext.beginPath();
+                        this.waitingContext.arc(this.waitingCanvas.width - blockHeight * 0.5, blockHeight * 2.5, blockHeight * 0.5, 0, Math.PI * 2, false);
+                        //this.waitingContext.strokeStyle = '#A4B231';
+                        //this.waitingContext.stroke();
+                        this.waitingContext.fill();
+                        this.waitingContext.closePath();
+                        //this.waitingContext.stroke();
+                        //
+                    } else {
+                        this.waitingContext.fillRect(this.waitingCanvas.width - blockHeight, blockHeight * 2, blockHeight, blockHeight);
+                    };
         };
     };
 
@@ -428,8 +500,34 @@ function Opponent(player) {
         this.clearBoat();
         this.waitingToFall = sentBoat.waitingToFall;
         this.boatContext.clearRect(0, 0, this.boatCanvas.width, this.boatCanvas.height);
-        this.boatContext.drawImage(window[sentBoat.bottomArray[0] + sentBoat.bottomArray[1]], sentBoat.bottomArray[2], sentBoat.bottomArray[3]);
-        this.boatContext.drawImage(window[sentBoat.topArray[0] + sentBoat.topArray[1]], sentBoat.topArray[2], sentBoat.topArray[3]);
+        var topColor = sentBoat.topArray[0];
+	    var topBreaker = sentBoat.topArray[1];
+	    var bottomColor = sentBoat.bottomArray[0];
+	    var bottomBreaker = sentBoat.bottomArray[1];
+	    this.boatContext.fillStyle = bottomColor;
+        if (bottomBreaker) {
+            this.boatContext.beginPath();
+            this.boatContext.arc(sentBoat.bottomArray[2] + blockHeight * 0.5, sentBoat.bottomArray[3] + blockHeight * 0.5, blockHeight / 2.0, 0, Math.PI * 2, false);
+            this.boatContext.fill();
+            this.boatContext.closePath();
+                        //this.waitingContext.stroke();
+                        
+        } else {
+            this.boatContext.fillRect(sentBoat.bottomArray[2], sentBoat.bottomArray[3], blockHeight, blockHeight);
+        };
+        this.boatContext.fillStyle = topColor;
+        if (topBreaker) {
+            this.boatContext.beginPath();
+            this.boatContext.arc(sentBoat.topArray[2] + blockHeight * 0.5, sentBoat.topArray[3] + blockHeight * 0.5, blockHeight / 2.0, 0, Math.PI * 2, false);
+            this.boatContext.fill();
+            this.boatContext.closePath();
+                        //this.waitingContext.stroke();
+                        
+        } else {
+            this.boatContext.fillRect(sentBoat.topArray[2], sentBoat.topArray[3], blockHeight, blockHeight);
+        };
+        //this.boatContext.drawImage(window[sentBoat.bottomArray[0] + sentBoat.bottomArray[1]], sentBoat.bottomArray[2], sentBoat.bottomArray[3]);
+        //this.boatContext.drawImage(window[sentBoat.topArray[0] + sentBoat.topArray[1]], sentBoat.topArray[2], sentBoat.topArray[3]);
         if (this.waitingToFall > 0) {
             this.boatContext.font = "bold 18px sans-serif";
             this.boatContext.fillStyle = '#FFFFFF';
@@ -474,12 +572,12 @@ function Board(name, carryover, meter) {
         }
     }
     for (i = 0; i < 10; i++) {
-        this.grid[0][i] = new Block('wall', 'Block');
-        this.grid[16][i] = new Block('wall', 'Block');
+        this.grid[0][i] = new Block('wall', false);
+        this.grid[16][i] = new Block('wall', false);
     }
     for (i = 1; i < 17; i++) {
-        this.grid[i][0] = new Block('wall', 'Block');
-        this.grid[i][9] = new Block('wall', 'Block');
+        this.grid[i][0] = new Block('wall', false);
+        this.grid[i][9] = new Block('wall', false);
     }
     this.isNull = function(row, column) {
         return this.grid[row][column] == null;
@@ -494,7 +592,7 @@ function Board(name, carryover, meter) {
         return this.grid[row][column].color;
     };
     this.isBreaker = function(row, column) {
-        return this.grid[row][column].breaker == 'Breaker';
+        return this.grid[row][column].breaker;
     };
     this.getBreaker = function(row, column) {
         return this.grid[row][column].breaker;
@@ -506,7 +604,7 @@ function Board(name, carryover, meter) {
         this.grid[row][column] = null;
     };
     this.makeFlash = function(row, column) {
-        this.grid[row][column] = new Block('white', 'Block');
+        this.grid[row][column] = new Block('white', false);
     };
     this.isNotFlash = function(row, column) {
         return this.grid[row][column].color !== 'white';
@@ -527,12 +625,14 @@ function Board(name, carryover, meter) {
     //Draw the placed blocks
     this.drawGrid = function() {
         var i, j;
+        this.context.closePath();
         this.context.beginPath();
         this.context.moveTo(0, 50);
         this.context.lineTo(320, 50);
         this.context.strokeStyle = warningLine;
         this.context.lineWidth = 2;
         this.context.stroke();
+        this.context.closePath();
         this.context.beginPath();
         this.context.lineWidth = 1;
         this.context.moveTo(0, 0);
@@ -542,11 +642,22 @@ function Board(name, carryover, meter) {
         this.context.lineTo(0, 0);
         this.context.strokeStyle = '#000000';
         this.context.stroke();
+        this.context.closePath();
         socket.emit('grid', { grid: firstPlayer.grid, playerNumber: playerNumber });
         for (i = 1; i < 16; i++) {
             for (j = 1; j < 9; j++) {
                 if (this.isNotNull(i, j)) {
-                    this.context.drawImage(window[this.getColor(i, j) + this.getBreaker(i, j)], (j - 1) * 40, 530 - i * 40);
+                    this.context.fillStyle = this.getColor(i, j);
+                    if (this.getBreaker(i, j)) {
+                        this.context.beginPath();
+                        this.context.arc((j - 0.5) * blockHeight, this.canvas.height - (i - 0.5) * blockHeight, blockHeight / 2.0, 0, Math.PI * 2, false);
+                        this.context.fill();
+                        this.context.closePath();
+                        //this.waitingContext.stroke();
+                        
+                    } else {
+                        this.context.fillRect((j - 1) * blockHeight, 530 - i * blockHeight, blockHeight, blockHeight);
+                    };
                 }
             }
         }
@@ -558,13 +669,13 @@ function Board(name, carryover, meter) {
             this.superMeter = superMax;
             this.superReady = true;
         }
+        this.context.closePath();
         this.waitingContext.clearRect(0, 0, this.waitingCanvas.width, this.waitingCanvas.height);
         socket.emit('waiting', { count: this.count, points: this.points, message: this.message, superMeter: this.superMeter, playerNumber: playerNumber });
             this.waitingContext.fillStyle = 'black';
             this.waitingContext.lineWidth = 1;
-            this.waitingContext.drawImage(window[theQueue.getNextColor(this.count + 3) + theQueue.getNextBreaker(this.count + 3)], 0, 40);
-            this.waitingContext.drawImage(window[theQueue.getNextColor(this.count + 2) + theQueue.getNextBreaker(this.count + 2)], 0, 80);
             this.waitingContext.font = "bold 14px sans-serif";
+            this.waitingContext.beginPath();
             this.waitingContext.fill();
             this.waitingContext.fillStyle = 'white';
             this.waitingContext.fillText('Points', 0, 160);
@@ -576,6 +687,7 @@ function Board(name, carryover, meter) {
             this.waitingContext.lineWidth = 3;
             this.waitingContext.strokeRect(2, 200, 15, 180);
             this.waitingContext.stroke();
+            this.waitingContext.closePath();
             this.waitingContext.fillStyle = 'white';
             this.waitingContext.fillText(this.message, 0, 460);
             if (firstPlayerWins > 0) { this.waitingContext.fillText('WINS: ' + firstPlayerWins, 0, 560); };
@@ -584,6 +696,34 @@ function Board(name, carryover, meter) {
             this.waitingContext.fillText('P', 4, 290);
             this.waitingContext.fillText('E', 4, 320);
             this.waitingContext.fillText('R', 4, 350);
+            this.waitingContext.fillStyle = theQueue.getNextColor(this.count + 3);
+                    console.log(theQueue.getNextBreaker(this.count + 3));
+                    if (theQueue.getNextBreaker(this.count + 3)) {
+                        //this.waitingContext.fillRect(0, blockHeight, blockHeight / 2.0, blockHeight / 2.0);
+                        this.waitingContext.beginPath();
+                        this.waitingContext.arc(blockHeight * 0.5, blockHeight * 1.5, blockHeight * 0.5, 0, Math.PI * 2, false);
+                        //this.waitingContext.strokeStyle = '#A4B231';
+                        //this.waitingContext.stroke();
+                        this.waitingContext.fill();
+                        this.waitingContext.closePath();
+                        
+                        //this.waitingContext.fill();
+                    } else {
+                        this.waitingContext.fillRect(0, blockHeight, blockHeight, blockHeight);
+                    };
+            this.waitingContext.fillStyle = theQueue.getNextColor(this.count + 2);
+                    if (theQueue.getNextBreaker(this.count + 2)) {
+                        this.waitingContext.beginPath();
+                        this.waitingContext.arc(blockHeight * 0.5, blockHeight * 2.5, blockHeight * 0.5, 0, Math.PI * 2, false);
+                        //this.waitingContext.strokeStyle = '#A4B231';
+                        //this.waitingContext.stroke();
+                        this.waitingContext.fill();
+                        this.waitingContext.closePath();
+                        //this.waitingContext.stroke();
+                        //
+                    } else {
+                        this.waitingContext.fillRect(0, blockHeight * 2, blockHeight, blockHeight);
+                    };
     };
 
     //Clears and redraws the grid
@@ -617,8 +757,6 @@ function Board(name, carryover, meter) {
 	            y = this.boat.positionY;
 	            break;
 	    }
-	    var bottomImage = window[this.boat.getBottomColor() + this.boat.getBottomBreaker()];
-	    var topImage = window[this.boat.getTopColor() + this.boat.getTopBreaker()]
 	    var topColor = this.boat.getTopColor();
 	    var topBreaker = this.boat.getTopBreaker();
 	    var bottomColor = this.boat.getBottomColor();
@@ -628,8 +766,28 @@ function Board(name, carryover, meter) {
 	    var sendWaiting = this.waitingToFall;
 	    socket.emit('boat', { bottomArray: [bottomColor, bottomBreaker, sendX, sendY], topArray: [topColor, topBreaker, x, y], waitingToFall: sendWaiting, playerNumber: playerNumber });
         this.boatContext.clearRect(0, 0, this.boatCanvas.width, this.boatCanvas.height);
-        this.boatContext.drawImage(bottomImage, this.boat.positionX, this.boat.positionY);
-        this.boatContext.drawImage(topImage, x, y);
+        this.boatContext.fillStyle = bottomColor;
+        if (bottomBreaker) {
+            this.boatContext.beginPath();
+            this.boatContext.arc(this.boat.positionX + blockHeight * 0.5, this.boat.positionY + blockHeight * 0.5, blockHeight / 2.0, 0, Math.PI * 2, false);
+            this.boatContext.fill();
+            this.boatContext.closePath();
+                        //this.waitingContext.stroke();
+                        
+        } else {
+            this.boatContext.fillRect(this.boat.positionX, this.boat.positionY, blockHeight, blockHeight);
+        };
+        this.boatContext.fillStyle = topColor;
+        if (topBreaker) {
+            this.boatContext.beginPath();
+            this.boatContext.arc(x + blockHeight * 0.5, y + blockHeight * 0.5, blockHeight / 2.0, 0, Math.PI * 2, false);
+            this.boatContext.fill();
+            this.boatContext.closePath();
+                        //this.waitingContext.stroke();
+                        
+        } else {
+            this.boatContext.fillRect(x, y, blockHeight, blockHeight);
+        };
         if (this.waitingToFall > 0) {
             this.boatContext.font = "bold 18px sans-serif";
             this.boatContext.fillStyle = '#FFFFFF';
@@ -1227,12 +1385,12 @@ function Practice(name, carryover, meter) {
         }
     }
     for (i = 0; i < 10; i++) {
-        this.grid[0][i] = new Block('wall', 'Block');
-        this.grid[16][i] = new Block('wall', 'Block');
+        this.grid[0][i] = new Block('wall', false);
+        this.grid[16][i] = new Block('wall', false);
     }
     for (i = 1; i < 17; i++) {
-        this.grid[i][0] = new Block('wall', 'Block');
-        this.grid[i][9] = new Block('wall', 'Block');
+        this.grid[i][0] = new Block('wall', false);
+        this.grid[i][9] = new Block('wall', false);
     }
     this.isNull = function(row, column) {
         return this.grid[row][column] == null;
@@ -1288,6 +1446,7 @@ function Practice(name, carryover, meter) {
         this.context.strokeStyle = warningLine;
         this.context.lineWidth = 2;
         this.context.stroke();
+        this.context.closePath();
         this.context.beginPath();
         this.context.lineWidth = 1;
         this.context.moveTo(0, 0);
@@ -1329,9 +1488,7 @@ function Practice(name, carryover, meter) {
         socket.emit('waiting', { count: this.count, points: this.points, message: this.message, superMeter: this.superMeter, playerNumber: playerNumber });
             this.waitingContext.fillStyle = 'black';
             this.waitingContext.lineWidth = 1;
-            
-            
-                    this.waitingContext.strokeStyle = 'black';
+            this.waitingContext.strokeStyle = 'black';
             //this.waitingContext.drawImage(window[theQueue.getNextColor(this.count + 3) + theQueue.getNextBreaker(this.count + 3)], 0, 40);
             //this.waitingContext.drawImage(window[theQueue.getNextColor(this.count + 2) + theQueue.getNextBreaker(this.count + 2)], 0, 80);
             this.waitingContext.beginPath();
@@ -1361,7 +1518,7 @@ function Practice(name, carryover, meter) {
                     if (theQueue.getNextBreaker(this.count + 3)) {
                         //this.waitingContext.fillRect(0, blockHeight, blockHeight / 2.0, blockHeight / 2.0);
                         this.waitingContext.beginPath();
-                        this.waitingContext.arc(20, 60, 20, 0, Math.PI * 2, false);
+                        this.waitingContext.arc(blockHeight * 0.5, blockHeight * 1.5, blockHeight * 0.5, 0, Math.PI * 2, false);
                         //this.waitingContext.strokeStyle = '#A4B231';
                         //this.waitingContext.stroke();
                         this.waitingContext.fill();
@@ -1374,7 +1531,7 @@ function Practice(name, carryover, meter) {
             this.waitingContext.fillStyle = theQueue.getNextColor(this.count + 2);
                     if (theQueue.getNextBreaker(this.count + 2)) {
                         this.waitingContext.beginPath();
-                        this.waitingContext.arc(20, 100, 20, 0, Math.PI * 2, false);
+                        this.waitingContext.arc(blockHeight * 0.5, blockHeight * 2.5, blockHeight * 0.5, 0, Math.PI * 2, false);
                         //this.waitingContext.strokeStyle = '#A4B231';
                         //this.waitingContext.stroke();
                         this.waitingContext.fill();
