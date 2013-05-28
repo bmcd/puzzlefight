@@ -26,16 +26,14 @@
 		  		drawLobby(data);
 		  	});
 		  	socket.on('joinedGame', function(data) {
+		  	    console.log("joinedGame");
 		  	    clearLobby();
-		  	    if (data.spectating) {
-		  	        spectating = true;
-		  	        startSpectating(data);
-		  	    } else {
-		  	        playerNumber = data.playerNumber;
-		  	        startPractice(data);
-		  	    };
+		  	    playerNumber = data.playerNumber;
+		  	    startPractice(data);
 		  	});
 		  	socket.on('startSpec', function(data) {
+		  	    clearLobby();
+		  	    playerNumber = data.playerNumber;
 		  	    startSpectating(data);
 		  	});
 		  	socket.on('first', function(queue) {
@@ -53,6 +51,9 @@
 		  	    endGame();
 		  	});
 		  	socket.on('yourTurn', function(data) {
+		  	    console.log('In yourTurn');
+		  	    firstPlayer = null;
+		  	    secondPlayer = null;
 		  	    joinGame(data.gameNumber);
 		  	});
 		  	socket.on('kicked', function() {
@@ -116,6 +117,7 @@
 		  	    };
 		  	});
 		var joinGame = function(number) {
+            console.log("joining game " + number);
             socket.emit('joinGame', { gameNumber: number });
         };
         var createGame = function() {

@@ -205,6 +205,8 @@ function Queue() {
         client.on('joinGame', function(data) {
             client.gameNumber = data.gameNumber;
             client.game = games[data.gameNumber];
+            console.log(games[client.gameNumber].firstPlayer);
+            console.log(games[client.gameNumber].secondPlayer);
             if (games[client.gameNumber].firstPlayer == null) {
                 games[client.gameNumber].firstPlayer = client.id;
                 client.playerNumber = 0;
@@ -214,6 +216,11 @@ function Queue() {
                 if (client.otherPlayer != null) {
                     sio.sockets.socket(client.otherPlayer).otherPlayer = client.id;
                 };
+                client.emit('joinedGame', { 
+                    gameNumber: client.gameNumber, 
+                    playerNumber: client.playerNumber, 
+                    practiceQueue: new Queue(),  
+                });
             } else if (games[client.gameNumber].secondPlayer == null) {
                 games[client.gameNumber].secondPlayer = client.id;
                 client.playerNumber = 1;
@@ -223,19 +230,19 @@ function Queue() {
                 if (client.otherPlayer != null) {
                     sio.sockets.socket(client.otherPlayer).otherPlayer = client.id;
                 };
+                client.emit('joinedGame', { 
+                    gameNumber: client.gameNumber, 
+                    playerNumber: client.playerNumber, 
+                    practiceQueue: new Queue(),  
+                });
             } else {
                 client.playerNumber = null;
                 games[client.gameNumber].spectators.push(client.id);
+                games[client.gameNumber].quarters.push(client.id);
                 client.spectating = true;
                 client.emit('startSpec', games[client.gameNumber]);
             };
             players.splice(players.indexOf(client.id), 1);
-            client.emit('joinedGame', { 
-                gameNumber: client.gameNumber, 
-                playerNumber: client.playerNumber, 
-                practiceQueue: new Queue(), 
-                spectating: client.spectating, 
-            });
             client.inLobby = false;
         });
             
@@ -271,6 +278,7 @@ function Queue() {
                 //Useful to know when someone disconnects
             console.log('\t socket.io:: client disconnected ' + client.id );
             if (client.spectating) {
+                console.log("Spectator left");
                 var specNum = games[client.gameNumber].spectators.indexOf(client.id);
                 var quaNum = games[client.gameNumber].quarters.indexOf(client.id);
                 games[client.gameNumber].spectators.splice(specNum, 1);
@@ -278,15 +286,24 @@ function Queue() {
                     games[client.gameNumber].quarters.splice(quaNum, 1);
                 };
             } else if (client.gameNumber == null) {
+                console.log("Lobby player left");
                 players.splice(players.indexOf(client.id), 1);
             } else {
+                if (client.otherPlayer != null) {
+                    sio.sockets.socket(client.otherPlayer).otherPlayer = null;
+                };
                 if (games[client.gameNumber].firstPlayer == client.id) {
-                    games[client.gameNumber].firstplayer = null;
+                    console.log("First player left");
+                    games[client.gameNumber].firstPlayer = null;
                 } else {
-                    games[client.gameNumber].secondplayer = null;
+                    console.log("Second player left");
+                    games[client.gameNumber].secondPlayer = null;
                 };
                 if (games[client.gameNumber].quarters.length > 0) {
+                    console.log("Grabbing player from quarters list");
+                    console.log(games[client.gameNumber].quarters);
                     var tempId = games[client.gameNumber].quarters.shift();
+                    sio.sockets.socket(tempId).spectating = false;
                     sio.sockets.socket(tempId).emit('yourTurn', { gameNumber: client.gameNumber });
                     games[client.gameNumber].spectators.splice(games[client.gameNumber].spectators.indexOf(tempId), 1);
                     if (client.otherPlayer != null) {
@@ -295,14 +312,19 @@ function Queue() {
                         sio.sockets.socket(client.otherPlayer).emit('startPractice', { practiceQueue: new Queue() });
                     };
                 } else if (client.otherPlayer == null) {
+                    console.log("No players remaining. Closing Game.");
+                    console.log(games[client.gameNumber].spectators);
                     while (games[client.gameNumber].spectators.length > 0) {
+                        console.log("Kicking spectator #" + tempId);
                         var tempId = games[client.gameNumber].spectators.shift();
                         sio.sockets.socket(tempId).spectating = false;
                         sio.sockets.socket(tempId).inLobby = true;
+                        sio.sockets.socket(tempId).gameNumber = null;
                         sio.sockets.socket(tempId).emit('kicked', {});
                     };
                     games[client.gameNumber] = 'empty';
                 } else {
+                    console.log("Letting other player practice");
                     sio.sockets.socket(client.otherPlayer).emit('reset', {} );
                     sio.sockets.socket(client.otherPlayer).emit('alert', { message: 'Other player disconnected.'});
                     sio.sockets.socket(client.otherPlayer).emit('startPractice', { practiceQueue: new Queue() });

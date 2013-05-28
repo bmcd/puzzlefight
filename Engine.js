@@ -89,6 +89,7 @@ var drawRounds = function() {
 };
 
 var startPractice = function(data) {
+    console.log("starting practice");
     drawRounds();
     inPractice = true;
     theQueue = new Queue(data.practiceQueue.queue);
