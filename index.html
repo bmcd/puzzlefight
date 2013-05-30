@@ -36,6 +36,9 @@
 		  	    playerNumber = data.playerNumber;
 		  	    startSpectating(data);
 		  	});
+		  	socket.on('restartSpec', function(data) {
+		  	    restartSpectating(data);
+		  	});
 		  	socket.on('first', function(queue) {
 		  	    startGame(queue);
 		  	});
@@ -126,12 +129,15 @@
         var refresh = function() {
             socket.emit('refresh', {});
         };
+        var notifySpec = function() {
+            socket.emit('notifySpec', {});
+        };
 				//Now we can listen for that event
 		  	socket.on('message', function(data) {
 		  	    console.log(data.message);
 		  	});
 		  	socket.on('alert', function(data) {
-		  	    alert(data.message);
+		  	    firstPlayer.message = data.message;
 		  	});
 		  	socket.on('refresh', function(data) {
 		  	    drawLobby(data);

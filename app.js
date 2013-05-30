@@ -237,15 +237,17 @@ function Queue() {
                 });
             } else {
                 client.playerNumber = null;
-                games[client.gameNumber].spectators.push(client.id);
-                games[client.gameNumber].quarters.push(client.id);
-                client.spectating = true;
                 client.emit('startSpec', games[client.gameNumber]);
             };
             players.splice(players.indexOf(client.id), 1);
             client.inLobby = false;
         });
             
+        client.on('notifySpec', function() {
+            games[client.gameNumber].spectators.push(client.id);
+            games[client.gameNumber].quarters.push(client.id);
+            client.spectating = true;
+        });
         client.on('ready', function(data) {
             var ready = data.ready;
             client.game = games[client.gameNumber];
@@ -282,9 +284,9 @@ function Queue() {
                 var specNum = games[client.gameNumber].spectators.indexOf(client.id);
                 var quaNum = games[client.gameNumber].quarters.indexOf(client.id);
                 games[client.gameNumber].spectators.splice(specNum, 1);
-                if (quaNum != -1) {
+                //if (quaNum != -1) {
                     games[client.gameNumber].quarters.splice(quaNum, 1);
-                };
+                //};
             } else if (client.gameNumber == null) {
                 console.log("Lobby player left");
                 players.splice(players.indexOf(client.id), 1);
@@ -428,7 +430,7 @@ function Queue() {
                 sio.sockets.socket(client.otherPlayer).emit('start', games[client.gameNumber]);
                 var spec;
                 for (spec = 0; spec < games[client.gameNumber].spectators.length; spec++) {
-                    sio.sockets.socket(games[client.gameNumber].spectators[spec]).emit('startSpec', games[client.gameNumber]);
+                    sio.sockets.socket(games[client.gameNumber].spectators[spec]).emit('restartSpec', games[client.gameNumber]);
                 };
             } else if (games[client.gameNumber].secondPlayerRounds > 1) {
                 games[client.gameNumber].firstPlayerRounds = 0;
@@ -439,14 +441,14 @@ function Queue() {
                 sio.sockets.socket(client.otherPlayer).emit('start', games[client.gameNumber]);
                 var spec;
                 for (spec = 0; spec < games[client.gameNumber].spectators.length; spec++) {
-                    sio.sockets.socket(games[client.gameNumber].spectators[spec]).emit('startSpec', games[client.gameNumber]);
+                    sio.sockets.socket(games[client.gameNumber].spectators[spec]).emit('restartSpec', games[client.gameNumber]);
                 };
             } else {
                 client.emit('restart', games[client.gameNumber]);
                 sio.sockets.socket(client.otherPlayer).emit('restart', games[client.gameNumber]);
                 var spec;
                 for (spec = 0; spec < games[client.gameNumber].spectators.length; spec++) {
-                    sio.sockets.socket(games[client.gameNumber].spectators[spec]).emit('startSpec', games[client.gameNumber]);
+                    sio.sockets.socket(games[client.gameNumber].spectators[spec]).emit('restartSpec', games[client.gameNumber]);
                 };
             };
           };

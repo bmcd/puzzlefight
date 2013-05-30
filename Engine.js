@@ -124,6 +124,15 @@ var startSpectating = function(data) {
     secondPlayerWins = data.secondPlayerWins;
     theQueue = new Queue(data.queue);
     drawRounds();
+    notifySpec();
+};
+var restartSpectating = function(data) {
+    firstPlayerRounds = data.firstPlayerRounds;
+    secondPlayerRounds = data.secondPlayerRounds;
+    firstPlayerWins = data.firstPlayerWins;
+    secondPlayerWins = data.secondPlayerWins;
+    theQueue = new Queue(data.queue);
+    drawRounds();
 };
 
 
