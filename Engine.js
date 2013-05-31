@@ -169,7 +169,7 @@ yellowBreaker.src = "images/yellowBreaker.png";
 var bombBomb = new Image();
 bombBomb.src = "images/nuke.png";
 
-//window.addEventListener("blur", function(event) { socket.emit('tab', { practice: inPractice, paused: paused }); }, false);
+window.addEventListener("blur", function(event) { socket.emit('tab', { practice: inPractice, paused: paused }); }, false);
 
 document.onkeydown = function(evt) {
     evt = evt || window.event;

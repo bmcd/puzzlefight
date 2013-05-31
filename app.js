@@ -265,7 +265,7 @@ function Queue() {
                 sio.sockets.socket(client.otherPlayer).emit('start', games[client.gameNumber]);
                 var spec;
                 for (spec = 0; spec < games[client.gameNumber].spectators.length; spec++) {
-                    sio.sockets.socket(games[client.gameNumber].spectators[spec]).emit('startSpec', games[client.gameNumber]);
+                    sio.sockets.socket(games[client.gameNumber].spectators[spec]).emit('restartSpec', games[client.gameNumber]);
                 };
                 games[client.gameNumber].firstPlayerReady = false;
                 games[client.gameNumber].secondPlayerReady = false;

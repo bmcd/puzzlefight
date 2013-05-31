@@ -84,7 +84,7 @@
 		  	    firstPlayer.changeReady(data.ready);
 		  	});
 		  	socket.on('startPractice', function (data) {
-		  	    if (!inPractice) { startPractice(data); };
+		  	    if (!inPractice) { startPractice(data); } else { firstPlayer.drawBoat(); };
 		  	});
 		  	socket.on('incomingBlocks', function(blocks) {
 		  	    firstPlayer.receiveBlocks(blocks.number);
@@ -137,7 +137,7 @@
 		  	    console.log(data.message);
 		  	});
 		  	socket.on('alert', function(data) {
-		  	    firstPlayer.message = data.message;
+		  	    console.log(data.message);
 		  	});
 		  	socket.on('refresh', function(data) {
 		  	    drawLobby(data);
