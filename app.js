@@ -16,6 +16,9 @@
         io              = require('socket.io'),
         
         verbose         = false;
+		var exec = require('child_process').exec
+
+		
  
 /* Express server set up. */
  
@@ -172,6 +175,14 @@ function Queue() {
         //Create Game
         client.on('createGame', function() {
             //Makes lowest numbered game not already going
+			exec('echo "Just created game" | ssmtp -s "User connected" bradmcdermott@gmail.com',
+			  function (error, stdout, stderr) {
+			    console.log('stdout: ' + stdout);
+			    console.log('stderr: ' + stderr);
+			    if (error !== null) {
+			      console.log('exec error: ' + error);
+			    }
+			});
             var i;
             for (i = 0; i < 22; i++) {
                 if (i == 21) { 
