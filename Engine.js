@@ -62,9 +62,38 @@ var drawRounds = function() {
     
 };
 
+var startTouch = function () {
+	upCanvas = document.getElementById("upCanvas");
+	upContext = upCanvas.getContext("2d");
+	downCanvas = document.getElementById("downCanvas");
+	downContext = downCanvas.getContext("2d");
+	leftCanvas = document.getElementById("leftCanvas");
+	leftContext = leftCanvas.getContext("2d");
+	rightCanvas = document.getElementById("rightCanvas");
+	rightContext = rightCanvas.getContext("2d");
+	clockCanvas = document.getElementById("clockCanvas");
+	clockContext = clockCanvas.getContext("2d");
+	counterCanvas = document.getElementById("counterCanvas");
+	counterContext = counterCanvas.getContext("2d");
+	superCanvas = document.getElementById("superCanvas");
+	superContext = superCanvas.getContext("2d");
+	pauseCanvas = document.getElementById("pauseCanvas");
+	pauseContext = pauseCanvas.getContext("2d");
+	//upCanvas.addEventListener("touchend", function() { firstPlayer.upArrowPressed(); }, false);
+	//downCanvas.addEventListener("touchstart", function() { firstPlayer.downArrowPressed(); }, false);
+	downCanvas.addEventListener("touchend", function() { firstPlayer.upArrowPressed(); }, false);
+	leftCanvas.addEventListener("touchend", function() { firstPlayer.leftArrowPressed(); }, false);
+	rightCanvas.addEventListener("touchend", function() { firstPlayer.rightArrowPressed(); }, false);
+	clockCanvas.addEventListener("touchend", function() { firstPlayer.dKeyPressed(); }, false);
+	counterCanvas.addEventListener("touchend", function() { firstPlayer.sKeyPressed(); }, false);
+	superCanvas.addEventListener("touchend", function() { firstPlayer.useSuper(); }, false);
+	pauseCanvas.addEventListener("touchend", function() { socket.emit('pause', { practice: inPractice, paused: paused }); }, false);
+}
+
 var startPractice = function(data) {
     console.log("starting practice");
-    drawRounds();
+	startTouch();
+		drawRounds();
     inPractice = true;
     theQueue = new Queue(data.practiceQueue.queue);
     firstPlayer = new Practice('A', 0, 0);
@@ -169,7 +198,11 @@ yellowBreaker.src = "images/yellowBreaker.png";
 var bombBomb = new Image();
 bombBomb.src = "images/nuke.png";
 
-window.addEventListener("blur", function(event) { socket.emit('tab', { practice: inPractice, paused: paused }); }, false);
+//window.addEventListener("blur", function(event) { socket.emit('tab', { practice: inPractice, paused: paused }); }, false);
+
+
+
+
 
 document.onkeydown = function(evt) {
     evt = evt || window.event;
