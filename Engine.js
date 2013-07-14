@@ -69,57 +69,60 @@ return check;
 
 var startTouch = function () {
 	if (window.mobilecheck()) {
-	upCanvas = document.getElementById("upCanvas");
-	upContext = upCanvas.getContext("2d");
-	//upCanvas.style.display='block';
-	downCanvas = document.getElementById("downCanvas");
-	downContext = downCanvas.getContext("2d");
-	downCanvas.style.display='block';
-	leftCanvas = document.getElementById("leftCanvas");
-	leftContext = leftCanvas.getContext("2d");
-	leftCanvas.style.display='block';
-	rightCanvas = document.getElementById("rightCanvas");
-	rightContext = rightCanvas.getContext("2d");
-	rightCanvas.style.display='block';
-	clockCanvas = document.getElementById("clockCanvas");
-	clockContext = clockCanvas.getContext("2d");
-	clockCanvas.style.display='block';
-	counterCanvas = document.getElementById("counterCanvas");
-	counterContext = counterCanvas.getContext("2d");
-	counterCanvas.style.display='block';
-	superCanvas = document.getElementById("superCanvas");
-	superContext = superCanvas.getContext("2d");
-	superCanvas.style.display='block';
-	pauseCanvas = document.getElementById("pauseCanvas");
-	pauseContext = pauseCanvas.getContext("2d");
-	pauseCanvas.style.display='block';
-	//upCanvas.addEventListener("touchend", function() { firstPlayer.upArrowPressed(); }, false);
-	//downCanvas.addEventListener("touchstart", function() { firstPlayer.downArrowPressed(); }, false);
-	downCanvas.addEventListener("touchend", function() { firstPlayer.upArrowPressed(); }, false);
-	leftCanvas.addEventListener("touchend", function() { firstPlayer.leftArrowPressed(); }, false);
-	rightCanvas.addEventListener("touchend", function() { firstPlayer.rightArrowPressed(); }, false);
-	clockCanvas.addEventListener("touchend", function() { firstPlayer.dKeyPressed(); }, false);
-	counterCanvas.addEventListener("touchend", function() { firstPlayer.sKeyPressed(); }, false);
-	superCanvas.addEventListener("touchend", function() { firstPlayer.useSuper(); }, false);
-	pauseCanvas.addEventListener("touchend", function() { socket.emit('pause', { practice: inPractice, paused: paused }); }, false);
-    }
-	else {
+		upCanvas = document.getElementById("upCanvas");
+		upContext = upCanvas.getContext("2d");
+		//upCanvas.style.display='block';
+		downCanvas = document.getElementById("downCanvas");
+		downContext = downCanvas.getContext("2d");
+		downCanvas.style.display='block';
+		leftCanvas = document.getElementById("leftCanvas");
+		leftContext = leftCanvas.getContext("2d");
+		leftCanvas.style.display='block';
+		rightCanvas = document.getElementById("rightCanvas");
+		rightContext = rightCanvas.getContext("2d");
+		rightCanvas.style.display='block';
+		clockCanvas = document.getElementById("clockCanvas");
+		clockContext = clockCanvas.getContext("2d");
+		clockCanvas.style.display='block';
+		counterCanvas = document.getElementById("counterCanvas");
+		counterContext = counterCanvas.getContext("2d");
+		counterCanvas.style.display='block';
+		superCanvas = document.getElementById("superCanvas");
+		superContext = superCanvas.getContext("2d");
+		superCanvas.style.display='none';
+		pauseCanvas = document.getElementById("pauseCanvas");
+		pauseContext = pauseCanvas.getContext("2d");
+		pauseCanvas.style.display='block';
+		//upCanvas.addEventListener("touchend", function() { firstPlayer.upArrowPressed(); }, false);
+		//downCanvas.addEventListener("touchstart", function() { firstPlayer.downArrowPressed(); }, false);
+		downCanvas.addEventListener("touchend", function() { firstPlayer.upArrowPressed(); }, false);
+		leftCanvas.addEventListener("touchend", function() { firstPlayer.leftArrowPressed(); }, false);
+		rightCanvas.addEventListener("touchend", function() { firstPlayer.rightArrowPressed(); }, false);
+		clockCanvas.addEventListener("touchend", function() { firstPlayer.dKeyPressed(); }, false);
+		counterCanvas.addEventListener("touchend", function() { firstPlayer.sKeyPressed(); }, false);
+		superCanvas.addEventListener("touchend", function() { firstPlayer.useSuper(); }, false);
+		pauseCanvas.addEventListener("touchend", function() { socket.emit('pause', { practice: inPractice, paused: paused }); }, false);
+		waitingCanvas = document.getElementById('playerAWaiting');
+		waitingCanvas.addEventListener("touchend", function() { 
+			if (inPractice) { 
+            	firstPlayer.changeReady(!ready);
+            	socket.emit('ready', { ready: ready }); 
+    		}}, false);
+    } else {
 		pauseCanvas = document.getElementById("pauseCanvas");
 		pauseContext = pauseCanvas.getContext("2d");
 		pauseCanvas.style.display='block';
 		pauseCanvas.addEventListener("mousedown", function() { socket.emit('pause', { practice: inPractice, paused: paused }); }, false);
+		superCanvas = document.getElementById("superCanvas");
+		superCanvas.addEventListener("mousedown", function() { firstPlayer.useSuper(); }, false);
+		waitingCanvas = document.getElementById('playerAWaiting');
+		waitingCanvas.addEventListener("mousedown", function() { 
+			if (inPractice) { 
+	            firstPlayer.changeReady(!ready);
+	            socket.emit('ready', { ready: ready }); 
+	        }}, false);
 	}
-	waitingCanvas = document.getElementById('playerAWaiting');
-	waitingCanvas.addEventListener("touchend", function() { 
-		if (inPractice) { 
-            firstPlayer.changeReady(!ready);
-            socket.emit('ready', { ready: ready }); 
-        }}, false);
-	waitingCanvas.addEventListener("mousedown", function() { 
-		if (inPractice) { 
-            firstPlayer.changeReady(!ready);
-            socket.emit('ready', { ready: ready }); 
-        }}, false);
+	
 	
 	
 }
@@ -644,6 +647,8 @@ function Board(name, carryover, meter) {
         if (this.superReady) {
             this.superReady = false;
             this.superMeter = 0;
+			superCanvas = document.getElementById("superCanvas");
+			superCanvas.style.display='none';
             this.doubleBomb();
         }
     };
@@ -693,6 +698,8 @@ function Board(name, carryover, meter) {
         if (this.superMeter >= superMax) {
             this.superMeter = superMax;
             this.superReady = true;
+			superCanvas = document.getElementById("superCanvas");
+			superCanvas.style.display='block';
         }
         //this.context.closePath();
         this.waitingContext.clearRect(0, 0, this.waitingCanvas.width, this.waitingCanvas.height);
@@ -1464,6 +1471,8 @@ function Practice(name, carryover, meter) {
         if (this.superReady) {
             this.superReady = false;
             this.superMeter = 0;
+			superCanvas = document.getElementById("superCanvas");
+			superCanvas.style.display='none';
             this.doubleBomb();
         }
     };
@@ -1513,6 +1522,8 @@ function Practice(name, carryover, meter) {
         if (this.superMeter >= superMax) {
             this.superMeter = superMax;
             this.superReady = true;
+			superCanvas = document.getElementById("superCanvas");
+			superCanvas.style.display='block';
         }
         this.waitingContext.clearRect(0, 0, this.waitingCanvas.width, this.waitingCanvas.height);
         socket.emit('waiting', { count: this.count, points: this.points, message: this.message, superMeter: this.superMeter, playerNumber: playerNumber });
