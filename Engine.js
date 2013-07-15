@@ -644,6 +644,7 @@ function Board(name, carryover, meter) {
         this.context.closePath();
         this.context.strokeStyle = outlineColor;
         this.context.stroke();
+		socket.emit('grid', { grid: firstPlayer.grid, playerNumber: playerNumber });
         for (i = 1; i < (rows + 4); i++) {
             for (j = 1; j < (columns + 1); j++) {
                 if (this.isNotNull(i, j)) {
