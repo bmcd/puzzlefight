@@ -29,7 +29,18 @@ var warningLine = '#E67E22';
 var safePause = true;
 var playerNumber;
 var spectating = false;
-var blockHeight = 40;
+var blockLength = 40;
+var startGameDelay = 3000;
+var colors = ['#C0392B', '#2980B9', '#27AE60', '#F1C40F'];
+var outlineColor = '#000000';
+var rows = 12;
+var columns = 8;
+var pointsTextPer = 0.23;
+var pointsPer = 0.25;
+var superWidth = 8;
+var messagePer = 0.65;
+var winsPer = 0.8;
+var waitingPad = 2 / 15;
     
 var pauseGame = function() {
     if (safePause) { 
@@ -129,23 +140,16 @@ var startTouch = function () {
 }
 
 var startPractice = function(data) {
-    console.log("starting practice");
 	startTouch();
 		drawRounds();
     inPractice = true;
     theQueue = new Queue(data.practiceQueue.queue);
     firstPlayer = new Board('A', 0, 0);
-    //secondPlayer = new Board('B', 0, 0);
     opponent = new Opponent('B');
     firstPlayer.startGame();
-    //secondPlayer.startGame();
 };
 
 var startGame = function(queue) {
-    //var aPoints = firstPlayer.points;
-    //var aSuper = firstPlayer.superMeter;
-    //var bPoints = secondPlayer.points;
-    //var bSuper = secondPlayer.superMeter;
     inPractice = false;
     paused = false;
     firstPlayerRounds = 0;
@@ -160,10 +164,8 @@ var startGame = function(queue) {
     drawRounds();
     theQueue = new Queue(queue.queue);
     firstPlayer = new Board('A', 0, 0);
-    //secondPlayer = new Board('B', 0, 0);
     opponent = new Opponent('B');
-    setTimeout(function() { firstPlayer.startGame(); }, 3000);
-    //secondPlayer.startGame();
+    setTimeout(function() { firstPlayer.startGame(); }, startGameDelay);
 };
 
 var restartGame = function(queue) {
@@ -183,7 +185,7 @@ var restartGame = function(queue) {
     theQueue = new Queue(queue.queue);
     firstPlayer = new Board('A', firstPlayer.points, firstPlayer.superMeter);
     //secondPlayer = new Board('B', secondPlayer.points, secondPlayer.superMeter);
-    setTimeout(function() { firstPlayer.startGame(); }, 5000);
+    setTimeout(function() { firstPlayer.startGame(); }, startGameDelay);
     //secondPlayer.startGame();
 };
 
@@ -231,37 +233,36 @@ bombBomb.src = "images/nuke.png";
 document.onkeydown = function(evt) {
     evt = evt || window.event;
     switch (evt.keyCode) {
-        case 32:
+        case 32: //space
             socket.emit('pause', { practice: inPractice, paused: paused });
             break;
-        case 37:
+        case 37: //left
             firstPlayer.leftArrowPressed();
             break;
-        case 38:
+        case 38: //up
             firstPlayer.upArrowPressed();
             break;
-        case 39:
+        case 39:  //right
             firstPlayer.rightArrowPressed();
             break;
-        case 66:
+        case 66: //b
             firstPlayer.useSuper();
             break;
-        case 78:
+        case 78: //n
             firstPlayer.sKeyPressed();
             break;
-        case 77:
+        case 77: //m
             firstPlayer.dKeyPressed();
             break;
-        case 40:
+        case 40: //down
             firstPlayer.downArrowPressed();
             break;
     }
 };
-
 document.onkeyup = function(evt) {
     evt = evt || window.event;
     switch (evt.keyCode) {
-        case 40:
+        case 40: //down
             firstPlayer.downArrowReleased();
             break;
     }
@@ -271,7 +272,6 @@ document.onkeyup = function(evt) {
 
 //Picks random color. Returns color as a string.
 var chooseColor = function() {
-    var colors = ['#C0392B', '#2980B9', '#27AE60', '#F1C40F'];
     return colors[Math.floor(Math.random() * colors.length)];
 };
 
@@ -365,9 +365,10 @@ function Opponent(player) {
         this.clearGrid();
         this.grid = sent.grid;
         var i, j;
+		console.log(this.grid);
         this.context.beginPath();
-        this.context.moveTo(0, 50);
-        this.context.lineTo(320, 50);
+        this.context.moveTo(0, blockLength * 1.25);
+        this.context.lineTo(this.canvas.width, blockLength * 1.25);
         this.context.strokeStyle = warningLine;
         this.context.lineWidth = 2;
         this.context.closePath();
@@ -380,19 +381,19 @@ function Opponent(player) {
         this.context.lineTo(this.canvas.width, 0);
         this.context.lineTo(0, 0);
         this.context.closePath();
-        this.context.strokeStyle = '#000000';
+        this.context.strokeStyle = outlineColor;
         this.context.stroke();
-        for (i = 1; i < 16; i++) {
-            for (j = 1; j < 9; j++) {
+        for (i = 1; i < (rows + 4); i++) {
+            for (j = 1; j < (columns + 1); j++) {
                 if (this.isNotNull(i, j)) {
                     this.context.fillStyle = this.getColor(i, j);
                     if (this.getBreaker(i, j)) {
                         this.context.beginPath();
-                        this.context.arc((j - 0.5) * blockHeight, this.canvas.height - (i - 0.5) * blockHeight, blockHeight / 2.0, 0, Math.PI * 2, false);
+                        this.context.arc((j - 0.5) * blockLength, this.canvas.height - (i - 0.5) * blockLength, blockLength / 2.0, 0, Math.PI * 2, false);
                         this.context.closePath();
                         this.context.fill();
                     } else {
-                        this.context.fillRect((j - 1) * blockHeight, 530 - i * blockHeight, blockHeight, blockHeight);
+                        this.context.fillRect((j - 1) * blockLength, this.canvas.height - i * blockLength, blockLength, blockLength);
                     };
                 }
             }
@@ -406,51 +407,41 @@ function Opponent(player) {
         this.message = sent.message;
         this.superMeter = sent.superMeter;
         this.waitingContext.clearRect(0, 0, this.waitingCanvas.width, this.waitingCanvas.height);
-        if (this.player == "A") {
+		if (this.player == "A") {
             this.waitingContext.fillStyle = 'black';
             this.waitingContext.lineWidth = 1;
             this.waitingContext.font = "bold 14px sans-serif";
             this.waitingContext.fillStyle = 'white';
-            this.waitingContext.fillText('Points', 0, 160);
-            this.waitingContext.fillText(this.points, 0, 180);
+            this.waitingContext.fillText('Points', waitingPad * this.waitingCanvas.width, this.waitingCanvas.height * pointsTextPer);
+            this.waitingContext.fillText(this.points, waitingPad * this.waitingCanvas.width, this.waitingCanvas.height * pointsPer);
             this.waitingContext.fillStyle = '#F39C12';
-            this.waitingContext.fillRect(2, 380 - 180 * (this.superMeter / superMax) , 15, 180 * (this.superMeter / superMax));
-            this.waitingContext.lineWidth = 3;
-            this.waitingContext.beginPath();
-            this.waitingContext.strokeRect(2, 200, 15, 180);
-            this.waitingContext.closePath();
-            this.waitingContext.stroke();
+            this.waitingContext.fillRect(0, this.canvas.height - this.canvas.height * (this.superMeter / superMax) , superWidth, this.canvas.height * (this.superMeter / superMax));
             this.waitingContext.fillStyle = 'white';
-            this.waitingContext.fillText(this.message, 0, 460);
-            if (firstPlayerWins > 0) { this.waitingContext.fillText('WINS: ' + firstPlayerWins, 0, 560); };
-            this.waitingContext.fillText('S', 4, 230);
-            this.waitingContext.fillText('U', 4, 260);
-            this.waitingContext.fillText('P', 4, 290);
-            this.waitingContext.fillText('E', 4, 320);
-            this.waitingContext.fillText('R', 4, 350);
+            this.waitingContext.fillText(this.message, waitingPad * this.waitingCanvas.width, this.waitingCanvas.height * messagePer);
+            if (firstPlayerWins > 0) { this.waitingContext.fillText('WINS: ' + firstPlayerWins, waitingPad * this.waitingCanvas.width, this.waitingCanvas.height * winsPer); };
             var theColor = theQueue.getNextColor(this.count + 3);
             this.waitingContext.fillStyle = theColor;
                     if (theColor == 'bomb') {
-                        this.waitingContext.drawImage(bombBomb, 0, blockHeight);
+                        this.waitingContext.drawImage(bombBomb, waitingPad * this.waitingCanvas.width, blockLength);
                     } else if (theQueue.getNextBreaker(this.count + 3)) {
                         this.waitingContext.beginPath();
-                        this.waitingContext.arc(blockHeight * 0.5, blockHeight * 1.5, blockHeight * 0.5, 0, Math.PI * 2, false);
+                        this.waitingContext.arc((waitingPad * this.waitingCanvas.width) + blockLength * 0.5, blockLength * 1.5, blockLength * 0.5, 0, Math.PI * 2, false);
                         this.waitingContext.closePath();
                         this.waitingContext.fill();
                     } else {
-                        this.waitingContext.fillRect(0, blockHeight, blockHeight, blockHeight);
+                        this.waitingContext.fillRect(waitingPad * this.waitingCanvas.width, blockLength, blockLength, blockLength);
                     };
             theColor = theQueue.getNextColor(this.count + 2);
             this.waitingContext.fillStyle = theColor;
                     if (theColor == 'bomb') {
-                        this.waitingContext.drawImage(bombBomb, 0, blockHeight * 2);
+                        this.waitingContext.drawImage(bombBomb, waitingPad * this.waitingCanvas.width, blockLength * 2);
                     } else if (theQueue.getNextBreaker(this.count + 2)) {
                         this.waitingContext.beginPath();
-                        this.waitingContext.arc(blockHeight * 0.5, blockHeight * 2.5, blockHeight * 0.5, 0, Math.PI * 2, false);
+                        this.waitingContext.arc((waitingPad * this.waitingCanvas.width) + blockLength * 0.5, blockLength * 2.5, blockLength * 0.5, 0, Math.PI * 2, false);
                         this.waitingContext.closePath();
                         this.waitingContext.fill();
                     } else {
-                        this.waitingContext.fillRect(0, blockHeight * 2, blockHeight, blockHeight);
+                        this.waitingContext.fillRect(waitingPad * this.waitingCanvas.width, blockLength * 2, blockLength, blockLength);
                     };
         } else {
             this.waitingContext.fillStyle = 'black';
@@ -458,46 +449,36 @@ function Opponent(player) {
             this.waitingContext.font = "bold 14px sans-serif";
             this.waitingContext.textAlign = 'right';
             this.waitingContext.fillStyle = 'white';
-            this.waitingContext.fillText('Points', this.waitingCanvas.width, 160);
-            this.waitingContext.fillText(this.points, this.waitingCanvas.width, 180);
+            this.waitingContext.fillText('Points', this.waitingCanvas.width - (waitingPad * this.waitingCanvas.width), this.waitingCanvas.height * pointsTextPer);
+            this.waitingContext.fillText(this.points, this.waitingCanvas.width - (waitingPad * this.waitingCanvas.width), this.waitingCanvas.height * pointsPer);
             this.waitingContext.fillStyle = '#F39C12';
-            this.waitingContext.fillRect(this.waitingCanvas.width - 17, 380 - 180 * (this.superMeter / superMax) , 15, 180 * (this.superMeter / superMax));
-            this.waitingContext.lineWidth = 3;
-            this.waitingContext.beginPath();
-            this.waitingContext.strokeRect(this.waitingCanvas.width - 17, 200, 15, 180);
-            this.waitingContext.closePath();
-            this.waitingContext.stroke();
+            this.waitingContext.fillRect(this.waitingCanvas.width - superWidth, this.canvas.height - this.canvas.height * (this.superMeter / superMax) , superWidth, this.canvas.height * (this.superMeter / superMax));
             this.waitingContext.fillStyle = 'white';
-            this.waitingContext.fillText(this.message, this.waitingCanvas.width, 460);
-            if (secondPlayerWins > 0) { this.waitingContext.fillText('WINS: ' + secondPlayerWins, this.waitingCanvas.width, 560); };
-            this.waitingContext.fillText('S', this.waitingCanvas.width - 6, 230);
-            this.waitingContext.fillText('U', this.waitingCanvas.width - 6, 260);
-            this.waitingContext.fillText('P', this.waitingCanvas.width - 6, 290);
-            this.waitingContext.fillText('E', this.waitingCanvas.width - 6, 320);
-            this.waitingContext.fillText('R', this.waitingCanvas.width - 6, 350);
+            this.waitingContext.fillText(this.message, this.waitingCanvas.width - (waitingPad * this.waitingCanvas.width), this.waitingCanvas.height * messagePer);
+            if (secondPlayerWins > 0) { this.waitingContext.fillText('WINS: ' + secondPlayerWins, this.waitingCanvas.width - (waitingPad * this.waitingCanvas.width), this.waitingCanvas.height * winsPer); };
             var theColor = theQueue.getNextColor(this.count + 3);
             this.waitingContext.fillStyle = theColor;
                     if (theColor == 'bomb') {
-                        this.waitingContext.drawImage(bombBomb, this.waitingCanvas.width - blockHeight, blockHeight);
+                        this.waitingContext.drawImage(bombBomb, this.waitingCanvas.width - blockLength - (waitingPad * this.waitingCanvas.width), blockLength);
                     } else if (theQueue.getNextBreaker(this.count + 3)) {
                         this.waitingContext.beginPath();
-                        this.waitingContext.arc(this.waitingCanvas.width - blockHeight * 0.5, blockHeight * 1.5, blockHeight * 0.5, 0, Math.PI * 2, false);
+                        this.waitingContext.arc(this.waitingCanvas.width - blockLength * 0.5 - (waitingPad * this.waitingCanvas.width), blockLength * 1.5, blockLength * 0.5, 0, Math.PI * 2, false);
                         this.waitingContext.closePath();
                         this.waitingContext.fill();
                     } else {
-                        this.waitingContext.fillRect(this.waitingCanvas.width - blockHeight, blockHeight, blockHeight, blockHeight);
+                        this.waitingContext.fillRect(this.waitingCanvas.width - blockLength - (waitingPad * this.waitingCanvas.width), blockLength, blockLength, blockLength);
                     };
             theColor = theQueue.getNextColor(this.count + 2);
             this.waitingContext.fillStyle = theColor;
                     if (theColor == 'bomb') {
-                        this.waitingContext.drawImage(bombBomb, this.waitingCanvas.width - blockHeight, blockHeight * 2);
+                        this.waitingContext.drawImage(bombBomb, this.waitingCanvas.width - blockLength - (waitingPad * this.waitingCanvas.width), blockLength * 2);
                     } else if (theQueue.getNextBreaker(this.count + 2)) {
                         this.waitingContext.beginPath();
-                        this.waitingContext.arc(this.waitingCanvas.width - blockHeight * 0.5, blockHeight * 2.5, blockHeight * 0.5, 0, Math.PI * 2, false);
+                        this.waitingContext.arc(this.waitingCanvas.width - blockLength * 0.5 - (waitingPad * this.waitingCanvas.width), blockLength * 2.5, blockLength * 0.5, 0, Math.PI * 2, false);
                         this.waitingContext.closePath();
                         this.waitingContext.fill();
                     } else {
-                        this.waitingContext.fillRect(this.waitingCanvas.width - blockHeight, blockHeight * 2, blockHeight, blockHeight);
+                        this.waitingContext.fillRect(this.waitingCanvas.width - blockLength - (waitingPad * this.waitingCanvas.width), blockLength * 2, blockLength, blockLength);
                     };
         };
     };
@@ -522,24 +503,24 @@ function Opponent(player) {
 	    this.boatContext.fillStyle = bottomColor;
         if (bottomBreaker) {
             this.boatContext.beginPath();
-            this.boatContext.arc(sentBoat.bottomArray[2] + blockHeight * 0.5, sentBoat.bottomArray[3] + blockHeight * 0.5, blockHeight / 2.0, 0, Math.PI * 2, false);
+            this.boatContext.arc(sentBoat.bottomArray[2] + blockLength * 0.5, sentBoat.bottomArray[3] + blockLength * 0.5, blockLength / 2.0, 0, Math.PI * 2, false);
             this.boatContext.fill();
             this.boatContext.closePath();
                         //this.waitingContext.stroke();
                         
         } else {
-            this.boatContext.fillRect(sentBoat.bottomArray[2], sentBoat.bottomArray[3], blockHeight, blockHeight);
+            this.boatContext.fillRect(sentBoat.bottomArray[2], sentBoat.bottomArray[3], blockLength, blockLength);
         };
         this.boatContext.fillStyle = topColor;
         if (topBreaker) {
             this.boatContext.beginPath();
-            this.boatContext.arc(sentBoat.topArray[2] + blockHeight * 0.5, sentBoat.topArray[3] + blockHeight * 0.5, blockHeight / 2.0, 0, Math.PI * 2, false);
+            this.boatContext.arc(sentBoat.topArray[2] + blockLength * 0.5, sentBoat.topArray[3] + blockLength * 0.5, blockLength / 2.0, 0, Math.PI * 2, false);
             this.boatContext.fill();
             this.boatContext.closePath();
                         //this.waitingContext.stroke();
                         
         } else {
-            this.boatContext.fillRect(sentBoat.topArray[2], sentBoat.topArray[3], blockHeight, blockHeight);
+            this.boatContext.fillRect(sentBoat.topArray[2], sentBoat.topArray[3], blockLength, blockLength);
         };
         //this.boatContext.drawImage(window[sentBoat.bottomArray[0] + sentBoat.bottomArray[1]], sentBoat.bottomArray[2], sentBoat.bottomArray[3]);
         //this.boatContext.drawImage(window[sentBoat.topArray[0] + sentBoat.topArray[1]], sentBoat.topArray[2], sentBoat.topArray[3]);
@@ -647,12 +628,12 @@ function Board(name, carryover, meter) {
         	notReady = true;
         }
         this.context.beginPath();
-        this.context.moveTo(0, 50);
-        this.context.lineTo(320, 50);
+        this.context.moveTo(0, blockLength * 1.25);
+        this.context.lineTo(this.canvas.width, blockLength * 1.25);
         this.context.strokeStyle = warningLine;
         this.context.lineWidth = 2;
-        this.context.stroke();
         this.context.closePath();
+        this.context.stroke();
         this.context.beginPath();
         this.context.lineWidth = 1;
         this.context.moveTo(0, 0);
@@ -660,21 +641,20 @@ function Board(name, carryover, meter) {
         this.context.lineTo(this.canvas.width, this.canvas.height);
         this.context.lineTo(this.canvas.width, 0);
         this.context.lineTo(0, 0);
-        this.context.strokeStyle = '#000000';
-        this.context.stroke();
         this.context.closePath();
-        socket.emit('grid', { grid: firstPlayer.grid, playerNumber: playerNumber });
-        for (i = 1; i < 16; i++) {
-            for (j = 1; j < 9; j++) {
+        this.context.strokeStyle = outlineColor;
+        this.context.stroke();
+        for (i = 1; i < (rows + 4); i++) {
+            for (j = 1; j < (columns + 1); j++) {
                 if (this.isNotNull(i, j)) {
                     this.context.fillStyle = this.getColor(i, j);
                     if (this.getBreaker(i, j)) {
                         this.context.beginPath();
-                        this.context.arc((j - 0.5) * blockHeight, this.canvas.height - (i - 0.5) * blockHeight, blockHeight / 2.0, 0, Math.PI * 2, false);
-                        this.context.fill();
+                        this.context.arc((j - 0.5) * blockLength, this.canvas.height - (i - 0.5) * blockLength, blockLength / 2.0, 0, Math.PI * 2, false);
                         this.context.closePath();
+                        this.context.fill();
                     } else {
-                        this.context.fillRect((j - 1) * blockHeight, 530 - i * blockHeight, blockHeight, blockHeight);
+                        this.context.fillRect((j - 1) * blockLength, this.canvas.height - i * blockLength, blockLength, blockLength);
                     };
                 }
             }
@@ -691,51 +671,41 @@ function Board(name, carryover, meter) {
         }
         this.waitingContext.clearRect(0, 0, this.waitingCanvas.width, this.waitingCanvas.height);
         socket.emit('waiting', { count: this.count, points: this.points, message: this.message, superMeter: this.superMeter, playerNumber: playerNumber });
-			this.waitingContext.fillStyle = 'black';
-			this.waitingContext.lineWidth = 1;
-			this.waitingContext.font = "bold 14px sans-serif";
-			this.waitingContext.fillStyle = 'white';
-			this.waitingContext.fillText('Points', 0, 160);
-			this.waitingContext.fillText(this.points, 0, 180);
-			this.waitingContext.fillStyle = '#F39C12';
-			this.waitingContext.fillRect(2, 380 - 180 * (this.superMeter / superMax) , 15, 180 * (this.superMeter / superMax));
-			this.waitingContext.lineWidth = 3;
-			this.waitingContext.beginPath();
-			this.waitingContext.strokeRect(2, 200, 15, 180);
-			this.waitingContext.closePath();
-			this.waitingContext.stroke();
-			this.waitingContext.fillStyle = 'white';
-			this.waitingContext.fillText(this.message, 0, 460);
-			if (firstPlayerWins > 0) { this.waitingContext.fillText('WINS: ' + firstPlayerWins, 0, 560); };
-			this.waitingContext.fillText('S', 4, 230);
-			this.waitingContext.fillText('U', 4, 260);
-			this.waitingContext.fillText('P', 4, 290);
-			this.waitingContext.fillText('E', 4, 320);
-			this.waitingContext.fillText('R', 4, 350);
+            this.waitingContext.fillStyle = 'black';
+            this.waitingContext.lineWidth = 1;
+            this.waitingContext.font = "bold 14px sans-serif";
+            this.waitingContext.fillStyle = 'white';
+            this.waitingContext.fillText('Points', waitingPad * this.waitingCanvas.width, this.waitingCanvas.height * pointsTextPer);
+            this.waitingContext.fillText(this.points, waitingPad * this.waitingCanvas.width, this.waitingCanvas.height * pointsPer);
+            this.waitingContext.fillStyle = '#F39C12';
+            this.waitingContext.fillRect(0, this.canvas.height - this.canvas.height * (this.superMeter / superMax) , superWidth, this.canvas.height * (this.superMeter / superMax));
+            this.waitingContext.fillStyle = 'white';
+            this.waitingContext.fillText(this.message, waitingPad * this.waitingCanvas.width, this.waitingCanvas.height * messagePer);
+            if (firstPlayerWins > 0) { this.waitingContext.fillText('WINS: ' + firstPlayerWins, waitingPad * this.waitingCanvas.width, this.waitingCanvas.height * winsPer); };
             var theColor = theQueue.getNextColor(this.count + 3);
             this.waitingContext.fillStyle = theColor;
                     if (theColor == 'bomb') {
-                        this.waitingContext.drawImage(bombBomb, 0, blockHeight);
+                        this.waitingContext.drawImage(bombBomb, waitingPad * this.waitingCanvas.width, blockLength);
                     } else if (theQueue.getNextBreaker(this.count + 3)) {
                         this.waitingContext.beginPath();
-                        this.waitingContext.arc(blockHeight * 0.5, blockHeight * 1.5, blockHeight * 0.5, 0, Math.PI * 2, false);
+                        this.waitingContext.arc((waitingPad * this.waitingCanvas.width) + blockLength * 0.5, blockLength * 1.5, blockLength * 0.5, 0, Math.PI * 2, false);
                         this.waitingContext.closePath();
                         this.waitingContext.fill();
                     } else {
-                        this.waitingContext.fillRect(0, blockHeight, blockHeight, blockHeight);
+                        this.waitingContext.fillRect(waitingPad * this.waitingCanvas.width, blockLength, blockLength, blockLength);
                     };
             theColor = theQueue.getNextColor(this.count + 2);
             this.waitingContext.fillStyle = theColor;
                     if (theColor == 'bomb') {
-                        this.waitingContext.drawImage(bombBomb, 0, blockHeight * 2);
+                        this.waitingContext.drawImage(bombBomb, waitingPad * this.waitingCanvas.width, blockLength * 2);
                     } else if (theQueue.getNextBreaker(this.count + 2)) {
                         this.waitingContext.beginPath();
-                        this.waitingContext.arc(blockHeight * 0.5, blockHeight * 2.5, blockHeight * 0.5, 0, Math.PI * 2, false);
+                        this.waitingContext.arc((waitingPad * this.waitingCanvas.width) + blockLength * 0.5, blockLength * 2.5, blockLength * 0.5, 0, Math.PI * 2, false);
                         this.waitingContext.closePath();
                         this.waitingContext.fill();
                     } else {
-                        this.waitingContext.fillRect(0, blockHeight * 2, blockHeight, blockHeight);
-                    };
+                        this.waitingContext.fillRect(waitingPad * this.waitingCanvas.width, blockLength * 2, blockLength, blockLength);
+                    };	
     };
 
     //Clears and redraws the grid
@@ -754,18 +724,18 @@ function Board(name, carryover, meter) {
         switch (this.boat.state) {
             case 'up':
 	            x = this.boat.positionX;
-	            y = this.boat.positionY - 40;
+	            y = this.boat.positionY - blockLength;
 	            break;
 	        case 'left':
-	            x = this.boat.positionX - 40;
+	            x = this.boat.positionX - blockLength;
 	            y = this.boat.positionY;
 	            break;
 	        case 'down':
 	            x = this.boat.positionX;
-	            y = this.boat.positionY + 40;
+	            y = this.boat.positionY + blockLength;
 	            break;
 	        case 'right':
-	            x = this.boat.positionX + 40;
+	            x = this.boat.positionX + blockLength;
 	            y = this.boat.positionY;
 	            break;
 	    }
@@ -783,22 +753,22 @@ function Board(name, carryover, meter) {
                 this.boatContext.drawImage(bombBomb, this.boat.positionX, this.boat.positionY);
             } else if (bottomBreaker) {
             this.boatContext.beginPath();
-            this.boatContext.arc(this.boat.positionX + blockHeight * 0.5, this.boat.positionY + blockHeight * 0.5, blockHeight / 2.0, 0, Math.PI * 2, false);
+            this.boatContext.arc(this.boat.positionX + blockLength * 0.5, this.boat.positionY + blockLength * 0.5, blockLength / 2.0, 0, Math.PI * 2, false);
             this.boatContext.closePath();
             this.boatContext.fill();          
         } else {
-            this.boatContext.fillRect(this.boat.positionX, this.boat.positionY, blockHeight, blockHeight);
+            this.boatContext.fillRect(this.boat.positionX, this.boat.positionY, blockLength, blockLength);
         };
         this.boatContext.fillStyle = topColor;
         if (topColor == 'bomb') {
                 this.boatContext.drawImage(bombBomb, x, y);
             } else if (topBreaker) {
             this.boatContext.beginPath();
-            this.boatContext.arc(x + blockHeight * 0.5, y + blockHeight * 0.5, blockHeight / 2.0, 0, Math.PI * 2, false);
+            this.boatContext.arc(x + blockLength * 0.5, y + blockLength * 0.5, blockLength / 2.0, 0, Math.PI * 2, false);
             this.boatContext.closePath();
             this.boatContext.fill();
         } else {
-            this.boatContext.fillRect(x, y, blockHeight, blockHeight);
+            this.boatContext.fillRect(x, y, blockLength, blockLength);
         };
         if (this.waitingToFall > 0) {
             this.boatContext.font = "bold 18px sans-serif";
@@ -834,7 +804,7 @@ function Board(name, carryover, meter) {
     this.checkClearBonus = function() {
         var bonus = true;
         var i;
-        for (i = 1; i < 9; i++) {
+        for (i = 1; i < (columns + 1); i++) {
             if (this.isNotNull(1, i)) {
                 bonus = false;        
             }
@@ -855,7 +825,7 @@ function Board(name, carryover, meter) {
     };
     this.checkGravity = function() {
         var j;
-        for (j = 1; j < 9; j++) {
+        for (j = 1; j < (columns + 1); j++) {
             this.consolidateColumn(j);
         }
         this.clearGrid();
@@ -863,7 +833,7 @@ function Board(name, carryover, meter) {
     };
     this.checkGravityWithPause = function() {
         var j;
-        for (j = 1; j < 9; j++) {
+        for (j = 1; j < (columns + 1); j++) {
             this.consolidateColumn(j);
         }
         this.clearGrid();
@@ -873,13 +843,13 @@ function Board(name, carryover, meter) {
     this.consolidateColumn = function(column) {
         var i;
         var tempList = [];
-        for (i = 1; i < 15; i++) {
+        for (i = 1; i < (rows + 3); i++) {
             if (this.isNotNull(i, column)) {
                 tempList.push(this.getBlock(i, column));
             }
         }
         if (tempList.length > 0) {
-            for (i = 1; i < 15; i++) {
+            for (i = 1; i < (rows + 3); i++) {
                 if (tempList.length > 0) {
                     this.placeBlock(i, column, tempList.shift());
                 } else {
@@ -892,7 +862,7 @@ function Board(name, carryover, meter) {
     //Checks for blocks above the line, otherwise resets the boat
     this.newTurn = function() {
         var i, end;
-        for (i = 1; i < 9; i++) {
+        for (i = 1; i < (columns + 1); i++) {
             if (this.isNotNull(13, i)) {
                 end = true;        
             }
@@ -917,8 +887,8 @@ function Board(name, carryover, meter) {
 
     this.checkBomb = function(color) {
         var i, j;
-        for (i = 15; i > 0; i--) {
-            for (j = 1; j < 9; j++) {
+        for (i = (rows + 3); i > 0; i--) {
+            for (j = 1; j < (columns + 1); j++) {
                 if (this.isNotNull(i, j) && this.isColor(i, j, color)) {
                     this.makeFlash(i, j);
                     this.points += 100;
@@ -929,8 +899,8 @@ function Board(name, carryover, meter) {
     };
     this.checkBombNoPoints = function(color) {
         var i, j;
-        for (i = 15; i > 0; i--) {
-            for (j = 1; j < 9; j++) {
+        for (i = (rows + 3); i > 0; i--) {
+            for (j = 1; j < (columns + 1); j++) {
                 if (this.isNotNull(i, j) && this.isColor(i, j, color)) {
                     this.makeFlash(i, j);
                 }
@@ -940,8 +910,8 @@ function Board(name, carryover, meter) {
     };
     this.clearFlash = function() {
         var i, j;
-        for (i = 15; i > 0; i--) {
-            for (j = 1; j < 9; j++) {
+        for (i = (rows + 3); i > 0; i--) {
+            for (j = 1; j < (columns + 1); j++) {
                 if (this.isNotNull(i, j) && this.isColor(i, j, 'white')) {
                     this.makeNull(i, j);
                 }
@@ -954,8 +924,8 @@ function Board(name, carryover, meter) {
     //Checks each space in the grid for breakers. Starts a break chain for each.
     this.checkBreakers = function() {
         var i, j;
-        for (i = 15; i > 0; i--) {
-            for (j = 1; j < 9; j++) {
+        for (i = (rows + 3); i > 0; i--) {
+            for (j = 1; j < (columns + 1); j++) {
                 if (this.isNotNull(i, j) && this.isBreaker(i, j)) {
                     this.breakChain(i, j, this.getColor(i, j), true);
                 }
@@ -1000,8 +970,8 @@ function Board(name, carryover, meter) {
     };
     this.checkForBomb = function() {
         var i, j;
-        for (i = 15; i > 0; i--) {
-            for (j = 1; j < 9; j++) {
+        for (i = (rows + 3); i > 0; i--) {
+            for (j = 1; j < (columns + 1); j++) {
                 if (this.isNotNull(i, j) && this.isBomb(i, j)) {
                     if (i === 1) {
                         this.message = 'Bomb Bonus';
@@ -1110,8 +1080,8 @@ function Board(name, carryover, meter) {
     this.dropBlocks = function () {
         var i, j;
         loop:
-            for (i = 1; i < 15; i++) {
-                for (j = 1; j < 9; j++) {
+            for (i = 1; i < (rows + 3); i++) {
+                for (j = 1; j < (columns + 1); j++) {
                     if (this.waitingToFall > 0 && this.isNull(i, j)) {
                         this.placeBlock(i, j, createBlockForFall());
                         this.waitingToFall -= 1;
@@ -1162,8 +1132,6 @@ function Board(name, carryover, meter) {
 	    return this.isNotNull(this.boat.row, this.boat.column) || this.isNotNull(this.boat.topRow, this.boat.topColumn);
     };
     this.up = function() {
-        //clearTimeout(this.interval);
-        //this.dropBoat();
         this.drop = 1;
     };
     this.down = function() {
@@ -1174,14 +1142,14 @@ function Board(name, carryover, meter) {
         if (this.checkLeft()) {
             this.boat.column -= 1;
             this.boat.topColumn -= 1;
-            this.boat.positionX -= 40;
+            this.boat.positionX -= blockLength;
         }
     };
     this.right = function() {
         if (this.checkRight()) {
             this.boat.column += 1;
             this.boat.topColumn += 1;
-            this.boat.positionX += 40;
+            this.boat.positionX += blockLength;
         }
     };
 
@@ -1282,7 +1250,7 @@ function Board(name, carryover, meter) {
         clearTimeout(this.timeout);
         this.clearBoat();
         this.count -= 2;
-        for (i = 1; i < 14; i++) {
+        for (i = 1; i < (rows + 2); i++) {
             if (one && this.isNull(i, 2)) {
                 this.placeBlock(i, 2, createBomb());
                 one = false;
@@ -1293,10 +1261,10 @@ function Board(name, carryover, meter) {
                 }
                 oneRow = i;
             }
-            if (two && this.isNull(i, 7)) {
-                this.placeBlock(i, 7, createBomb());
+            if (two && this.isNull(i, (columns - 1))) {
+                this.placeBlock(i, (columns - 1), createBomb());
                 two = false;
-                twoColor = this.getColor(i - 1, 7);
+                twoColor = this.getColor(i - 1, (columns - 1));
                 twoRow = i;
                 if (i == 1) {
                     this.message = "Bomb Bonus";
@@ -1305,7 +1273,7 @@ function Board(name, carryover, meter) {
             }
         }
         this.makeNull(oneRow, 2);
-        this.makeNull(twoRow, 7);
+        this.makeNull(twoRow, (columns - 1));
         this.checkBombNoPoints(oneColor);
         this.checkBombNoPoints(twoColor);
         this.clearGrid();
@@ -1384,4 +1352,3 @@ function Queue(sent) {
     };
     
 };
-

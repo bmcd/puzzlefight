@@ -177,8 +177,6 @@ function Queue() {
             //Makes lowest numbered game not already going
 			exec('echo "Just created game" | ssmtp -s "User connected" bradmcdermott@gmail.com',
 			  function (error, stdout, stderr) {
-			    console.log('stdout: ' + stdout);
-			    console.log('stderr: ' + stderr);
 			    if (error !== null) {
 			      console.log('exec error: ' + error);
 			    }
