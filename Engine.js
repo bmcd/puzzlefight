@@ -41,7 +41,107 @@ var superWidth = 8;
 var messagePer = 0.65;
 var winsPer = 0.8;
 var waitingPad = 2 / 15;
+
+//canvii
+var roundCanvas, roundContext;
+var backgroundCanvas, backgroundContext;
+var playerACanvas, playerAContext;
+var playerBCanvas, playerBContext;
+var playerBWaitingCanvas, playerBWaitingContext;
+var playerABoatCanvas, playerABoatContext;
+var playerBBoatCanvas, playerBBoatContext;
+var counterCanvas, counterContext;
+var upCanvas, upContext;
+var clockCanvas, clockContext;
+var leftCanvas, leftContext;
+var downCanvas, downContext;
+var rightCanvas, rightContext;
+var superCanvas, superContext;
+var playerAWaitingCanvas, playerAWaitingContext;
+var pauseCanvas, pauseContext;
+var lobbyCanvas, lobbyContext;
+ 
+ 
+ 
+window.onresize = function(event) { resetDim(window.width); }; 
+ 
     
+var resetDim = function(windowWidth) {
+    roundCanvas = document.getElementById('roundCanvas');
+    roundContext = roundCanvas.getContext('2d');
+	upCanvas = document.getElementById("upCanvas");
+	upContext = upCanvas.getContext("2d");
+	downCanvas = document.getElementById("downCanvas");
+	downContext = downCanvas.getContext("2d");
+	leftCanvas = document.getElementById("leftCanvas");
+	leftContext = leftCanvas.getContext("2d");
+	rightCanvas = document.getElementById("rightCanvas");
+	rightContext = rightCanvas.getContext("2d");
+	clockCanvas = document.getElementById("clockCanvas");
+	clockContext = clockCanvas.getContext("2d");
+	counterCanvas = document.getElementById("counterCanvas");
+	counterContext = counterCanvas.getContext("2d");
+	superCanvas = document.getElementById("superCanvas");
+	superContext = superCanvas.getContext("2d");
+	pauseCanvas = document.getElementById("pauseCanvas");
+	pauseContext = pauseCanvas.getContext("2d");
+	playerACanvas = document.getElementById("playerA");
+	playerAContext = playerACanvas.getContext("2d");
+	playerBCanvas = document.getElementById("playerB");
+	playerBContext = playerBCanvas.getContext("2d");
+	playerAWaitingCanvas = document.getElementById("playerAWaiting");
+	playerAWaitingContext = playerAWaitingCanvas.getContext("2d");
+	playerBWaitingCanvas = document.getElementById("playerBWaiting");
+	playerBWaitingContext = playerBWaitingCanvas.getContext("2d");
+	playerBBoatCanvas = document.getElementById("playerBBoat");
+	playerBBoatContext = playerBBoatCanvas.getContext("2d");
+	playerABoatCanvas = document.getElementById("playerABoat");
+	playerABoatContext = playerABoatCanvas.getContext("2d");
+	backgroundCanvas = document.getElementById("background");
+	backgroundContext = backgroundCanvas.getContext("2d");
+	lobbyCanvas = document.getElementById("lobbyCanvas");
+	lobbyContext = lobbyCanvas.getContext("2d");
+	backgroundCanvas.width = windowWidth;
+	backgroundCanvas.height = windowWidth * 0.65;
+	blockLength = windowWidth * (1 / 29.0);
+	var normWidth = blockLength * columns;
+	var normHeight = blockLength * (rows + 1.25);
+	var leftGap = blockLength * 2.5;
+	var topGap = blockLength * 0.75;
+	playerACanvas.width = normWidth;
+	playerACanvas.height = normHeight;
+	playerACanvas.style.top = topGap;
+	playerACanvas.style.left = leftGap;
+	playerBCanvas.width = normWidth;
+	playerBCanvas.height = normHeight;
+	playerACanvas.style.top = topGap;
+	playerACanvas.style.left = playerACanvas.width * 2 + leftGap;
+	playerAWaiting.width = normWidth / 2.0;
+	playerAWaiting.height = normHeight;
+	playerAwaiting.style.top = topGap;
+	playerAWaiting.style.left = playerACanvas.width + leftGap;
+	playerBWaiting.width = normWidth / 2.0;
+	playerBWaiting.height = normHeight;
+	playerBwaiting.style.top = topGap;
+	playerBWaiting.style.left = playerACanvas.width + leftGap + playerAWaitingCanvas.width;
+	roundCanvas.width = normWidth;
+	roundCanvas.height = normHeight;
+	roundCanvas.style.top = topGap;
+	roundCanvas.style.left = playerACanvas.width + leftGap;
+	leftCanvas.width = normWidth;
+	leftCanvas.height = normWidth;
+	rightCanvas.width = normWidth;
+	rightCanvas.height = normWidth;
+	downCanvas.width = normWidth;
+	downCanvas.height = normWidth;
+	counterCanvas.width = normWidth;
+	counterCanvas.height = normWidth;
+	clockCanvas.width = normWidth;
+	clockCanvas.height = normWidth;
+	superCanvas.width = normWidth / 2.5;
+	superCanvas.height = normWidth / 2.5;
+}
+
 var pauseGame = function() {
     if (safePause) { 
 	    clearTimeout(firstPlayer.timeout);
@@ -51,8 +151,6 @@ var pauseGame = function() {
 	};
 };
 var drawRounds = function() {
-    roundCanvas = document.getElementById('roundCanvas');
-    roundContext = roundCanvas.getContext('2d');
     roundContext.clearRect(0, 0, roundCanvas.width, roundCanvas.height);
     roundContext.fillStyle = 'black';
     roundContext.fillRect(6, 0, 40, 20);
@@ -81,29 +179,13 @@ return check;
 
 var startTouch = function () {
 	if (window.mobilecheck()) {
-		upCanvas = document.getElementById("upCanvas");
-		upContext = upCanvas.getContext("2d");
 		//upCanvas.style.display='block';
-		downCanvas = document.getElementById("downCanvas");
-		downContext = downCanvas.getContext("2d");
 		downCanvas.style.display='block';
-		leftCanvas = document.getElementById("leftCanvas");
-		leftContext = leftCanvas.getContext("2d");
 		leftCanvas.style.display='block';
-		rightCanvas = document.getElementById("rightCanvas");
-		rightContext = rightCanvas.getContext("2d");
 		rightCanvas.style.display='block';
-		clockCanvas = document.getElementById("clockCanvas");
-		clockContext = clockCanvas.getContext("2d");
 		clockCanvas.style.display='block';
-		counterCanvas = document.getElementById("counterCanvas");
-		counterContext = counterCanvas.getContext("2d");
 		counterCanvas.style.display='block';
-		superCanvas = document.getElementById("superCanvas");
-		superContext = superCanvas.getContext("2d");
 		superCanvas.style.display='none';
-		pauseCanvas = document.getElementById("pauseCanvas");
-		pauseContext = pauseCanvas.getContext("2d");
 		pauseCanvas.style.display='block';
 		//upCanvas.addEventListener("touchend", function() { firstPlayer.upArrowPressed(); }, false);
 		//downCanvas.addEventListener("touchstart", function() { firstPlayer.downArrowPressed(); }, false);
@@ -114,21 +196,16 @@ var startTouch = function () {
 		counterCanvas.addEventListener("touchend", function() { firstPlayer.sKeyPressed(); }, false);
 		superCanvas.addEventListener("touchend", function() { firstPlayer.useSuper(); }, false);
 		pauseCanvas.addEventListener("touchend", function() { socket.emit('pause', { practice: inPractice, paused: paused }); }, false);
-		waitingCanvas = document.getElementById('playerAWaiting');
-		waitingCanvas.addEventListener("touchend", function() { 
+		playerAWaitingCanvas.addEventListener("touchend", function() { 
 			if (inPractice) { 
             	firstPlayer.changeReady(!ready);
             	socket.emit('ready', { ready: ready }); 
     		}}, false);
     } else {
-		pauseCanvas = document.getElementById("pauseCanvas");
-		pauseContext = pauseCanvas.getContext("2d");
 		pauseCanvas.style.display='block';
 		pauseCanvas.addEventListener("mousedown", function() { socket.emit('pause', { practice: inPractice, paused: paused }); }, false);
-		superCanvas = document.getElementById("superCanvas");
 		superCanvas.addEventListener("mousedown", function() { firstPlayer.useSuper(); }, false);
-		waitingCanvas = document.getElementById('playerAWaiting');
-		waitingCanvas.addEventListener("mousedown", function() { 
+		playerAWaitingCanvas.addEventListener("mousedown", function() { 
 			if (inPractice) { 
 	            firstPlayer.changeReady(!ready);
 	            socket.emit('ready', { ready: ready }); 
@@ -226,10 +303,6 @@ bombBomb.src = "images/nuke.png";
 
 //window.addEventListener("blur", function(event) { socket.emit('tab', { practice: inPractice, paused: paused }); }, false);
 
-
-
-
-
 document.onkeydown = function(evt) {
     evt = evt || window.event;
     switch (evt.keyCode) {
@@ -318,12 +391,21 @@ function Opponent(player) {
     this.superMeter = 0;
     this.message = " ";
     this.boat = {};
-    this.canvas = document.getElementById('player' + this.player);
-    this.context = this.canvas.getContext('2d');
-    this.waitingCanvas = document.getElementById('player' + this.player + 'Waiting');
-    this.waitingContext = this.waitingCanvas.getContext('2d');
-    this.boatCanvas = document.getElementById('player' + this.player + 'Boat');
-    this.boatContext = this.boatCanvas.getContext('2d');
+	if (this.player == 'A') {
+	    this.canvas = playerACanvas;
+	    this.context = playerAContext;
+	    this.waitingCanvas = playerAWaitingCanvas;
+	    this.waitingContext = playerAWaitingContext;
+	    this.boatCanvas = playerABoatCanvas;
+	    this.boatContext = playerABoatContext;
+	} else {
+	    this.canvas = playerBCanvas;
+	    this.context = playerBContext;
+	    this.waitingCanvas = playerBWaitingCanvas;
+	    this.waitingContext = playerBWaitingContext;
+	    this.boatCanvas = playerBBoatCanvas;
+	    this.boatContext = playerBBoatContext;
+	}
     this.isNull = function(row, column) {
         return this.grid[row][column] == null;
     };
@@ -545,12 +627,12 @@ function Board(name, carryover, meter) {
     this.drop = 0;
     this.message = " ";
     this.boat = new Boat();
-    this.canvas = document.getElementById('player' +name);
-    this.context = this.canvas.getContext('2d');
-    this.waitingCanvas = document.getElementById('player' + this.name + "Waiting");
-    this.waitingContext = this.waitingCanvas.getContext('2d');
-    this.boatCanvas = document.getElementById('player' + this.name + "Boat");
-    this.boatContext = this.boatCanvas.getContext('2d');
+    this.canvas = playerACanvas;
+    this.context = playerAContext;
+    this.waitingCanvas = playerAWaitingCanvas;
+    this.waitingContext = playerAWaitingContext;
+    this.boatCanvas = playerABoatCanvas;
+    this.boatContext = playerABoatContext;
     //Point variables
     this.justBroken = 0;
     this.waitingToSend = 0;
