@@ -8,7 +8,7 @@
 */
  
    var 
-        gameport        = process.env.PORT || 4004,
+        gameport        = process.env.PORT || 5000,
  
         UUID            = require('node-uuid'),
         app             = require('express')(),
@@ -128,6 +128,10 @@ function Queue() {
         
         //Create a socket.io instance using our express server
     var sio = io.listen(server);
+	sio.configure(function () { 
+        sio.set("transports", ["xhr-polling"]); 
+        sio.set("polling duration", 10); 
+    });
     //var ServerSide = require('./ServerSide.js');
         //Configure the socket.io connection settings. 
         //See http://socket.io/
