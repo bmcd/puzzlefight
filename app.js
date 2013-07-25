@@ -8,7 +8,7 @@
 */
  
    var 
-        gameport        = process.env.PORT || 5000,
+        gameport        = process.env.PORT || 4004,
  
         UUID            = require('node-uuid'),
         app             = require('express')(),
