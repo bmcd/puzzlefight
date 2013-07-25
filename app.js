@@ -131,7 +131,6 @@ function Queue() {
 	sio.configure(function () { 
         sio.set("transports", ["xhr-polling"]); 
         sio.set("polling duration", 10); 
-		sio.set('close timeout', 6);
     });
     //var ServerSide = require('./ServerSide.js');
         //Configure the socket.io connection settings. 
