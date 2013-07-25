@@ -146,6 +146,7 @@ var startPractice = function(data) {
     theQueue = new Queue(data.practiceQueue.queue);
     firstPlayer = new Board('A', 0, 0);
     opponent = new Opponent('B');
+	socket.emit('ready', { ready: true });
     firstPlayer.startGame();
 };
 
