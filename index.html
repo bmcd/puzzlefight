@@ -1,7 +1,7 @@
 <html>
 <head>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-	<meta name="viewport" id='main' content="width=1160, user-scalable=0" />
+	<meta name="viewport" id='main' content="width=device-width, user-scalable=0" />
   <title> PMFKKK </title>
   
   <style type='text/css'>
@@ -11,6 +11,7 @@
   <script src="lobby.js"></script>
    	<!-- Notice the URL, this is handled by socket.io on the server automatically, via express -->
 		<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 		
 			<!-- This will create a connection to socket.io, and print the user serverid that we sent from the server side. --> 
 		<script type="text/javascript">
@@ -148,7 +149,7 @@
 		</script>
   
   </head>
-<body bgcolor="#2c3e50" width="1160">
+<body bgcolor="#2c3e50" width="100%">
 <canvas id="background" width="1160" height="680" style="position: absolute; background: #2c3e50;"></canvas>
 <canvas id="playerA" width="320" height="530" style="position: absolute; left: 100px; top: 30px; background: url(images/transpBlack75.png);"></canvas>
 <canvas id="playerB" width="320" height="530" style="position: absolute; left: 740px; top: 30px; background: url(images/transpBlack75.png);"></canvas>
@@ -213,6 +214,13 @@
     document.getElementById("20").addEventListener("click", function() { joinGame(20);});
     document.getElementById("createGameButton").addEventListener("click", function() { createGame();});
     document.getElementById("refresh").addEventListener("click", function() { refresh();});
+		
+		$(document).ready(function () {
+		    $(window).resize(function() {
+					windowWidth = $(this).width();
+					resetDim(windowWidth);
+		    });
+		});
 </script>
   <script src="Puzzle.js">
   </script>  
