@@ -3,6 +3,7 @@
         var lobbyContext = lobbyCanvas.getContext('2d');
         lobbyCanvas.style.background='#2c3e50';
         lobbyCanvas.style.display='block';
+		$('#lobbyCanvas').animate({ 'opacity': '1' }, 500);
         lobbyContext.clearRect(0, 0, lobbyCanvas.width, lobbyCanvas.height);
         var games = data.gameList;
         var players = data.playerList.length;
@@ -23,8 +24,8 @@
     var clearLobby = function() {
         var lobbyCanvas = document.getElementById('lobbyCanvas');
         var lobbyContext = lobbyCanvas.getContext('2d');
-        lobbyCanvas.style.background='transparent';
-        lobbyCanvas.style.display='none';
+        //lobbyCanvas.style.background='transparent';
+		$('#lobbyCanvas').animate({ 'opacity': '0' }, 500, function() { lobbyCanvas.style.display='none' });
         lobbyContext.clearRect(0, 0, lobbyCanvas.width, lobbyCanvas.height);
         var i;
         for (i = 0; i < 21; i++) {

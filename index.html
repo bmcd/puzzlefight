@@ -7,6 +7,7 @@
   <style type='text/css'>
     
   </style>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
   <script src="Engine.js"></script>
   <script src="lobby.js"></script>
    	<!-- Notice the URL, this is handled by socket.io on the server automatically, via express -->
@@ -165,7 +166,7 @@
 <canvas id="superCanvas" width="100" height="100" style="position: absolute; left: 530px; top: 710px; display: none; background: #e67e22;"></canvas>
 <canvas id="playerAWaiting" width="150" height="700" style="position: absolute; left: 420px; top: 30px; "></canvas>
 <canvas id="pauseCanvas" width="80" height="80" style="position: absolute; left: 540px; top: 30px; background: url(images/pause.png); background-size: cover; display: none;"></canvas>
-<canvas id="lobbyCanvas" width="1160" height="1320" style="position: absolute; background: #2c3e50;"></canvas>
+<canvas id="lobbyCanvas" width="1160" height="1320" style="position: absolute; background: #2c3e50; opacity: 0;"></canvas>
 <button id="0" type="button" style="position: absolute; top: 38px; left: 40px; display: none;">Join</button>
 <button id="1" type="button" style="position: absolute; top: 68px; left: 40px; display: none;">Join</button>
 <button id="2" type="button" style="position: absolute; top: 98px; left: 40px; display: none;">Join</button>
