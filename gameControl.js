@@ -13,6 +13,13 @@ exports.handleClientConnect = function(client) {
 
 	autoJoinGame(client);
 
+	client.on('disconnect', function () {
+		if (client.gameId) {
+			leaveGame(client);
+		}
+		console.log("Player", client.id, "has left the server.")
+	});
+
   // client.on('createGame', function() {
   //     //Makes lowest numbered game not already going
   //     var i;
@@ -301,8 +308,8 @@ exports.handleClientConnect = function(client) {
 function autoJoinGame(client) {
 	var foundGame;
 	_und.each(games, function(game, id) {
-		console.log("Id: ", id,"Game Data: ", game, "Game Length:", game.length);
-		if (game.length < 2 && !foundGame) {
+		console.log("Id: ", id,"Game Data: ", game, "Game Length:", game.players);
+		if (game.players.length < 2 && !foundGame) {
 			foundGame = id;
 		}
 	});
@@ -319,6 +326,28 @@ function autoJoinGame(client) {
 
 function joinGame(gameId, client) {
 	console.log("In joinGame");
+	if (!games[gameId].firstPlayer) {
+		games[gameId].firstPlayer = client.id
+		games[gameId].players.push(client.id)
+		client.gameId = gameId;
+		client.emit('joinedGame', {
+			gameId: gameId,
+			gameData: games[gameId],
+			playerNumber: 1
+		});
+	} else if (!games[gameId].secondPlayer) {
+		client.gameId = gameId;
+		games[gameId].secondPlayer = client.id
+		games[gameId].players.push(client.id)
+		client.emit('joinedGame', {
+			gameId: gameId,
+			gameData: games[gameId],
+			playerNumber: 2
+		});
+	} else {
+		console.log("Join failed on", gameId, games[gameId]);
+		client.emit("message", { message: "Failed to join game" })
+	}
 }
 
 function createGame(client) {
@@ -326,8 +355,10 @@ function createGame(client) {
 	var gameId = nextGameNumber.toString();
 	nextGameNumber += 1;
 
-	games[gameId] = makeGameData(client.id);
+	games[gameId] = makeGameData(client.id, gameId);
 	console.log("Create Game " + gameId);
+
+	client.gameId = gameId;
 
 	client.emit('joinedGame', {
 		gameId: gameId,
@@ -336,9 +367,11 @@ function createGame(client) {
 	});
 }
 
-function makeGameData(firstPlayerId) {
+function makeGameData(firstPlayerId, gameId) {
 	return {
+		gameId: gameId,
 		queue: new serverSide.Queue().queue,
+		players: [firstPlayerId],
 		firstPlayer: firstPlayerId,
 		secondPlayer: null,
 		firstPlayerReady: false,
@@ -351,4 +384,25 @@ function makeGameData(firstPlayerId) {
 		pausedId: null,
 		ending: false
 		}
+}
+
+function leaveGame(client) {
+	var gameId = client.gameId;
+	var index = games[gameId].players.indexOf(client.id);
+	games[gameId].players.splice(index, 1);
+	if (games[gameId].firstPlayer === client.id) {
+		games[gameId].firstPlayer = null;
+	}
+	if (games[gameId].secondPlayer === client.id) {
+		games[gameId].secondPlayer = null;
+	}
+	console.log("Player", client.id, "has left game", gameId);
+	if (games[gameId].players.length === 0) {
+		closeGame(gameId);
+	}
+}
+
+function closeGame(gameId) {
+	games[gameId] = null;
+	console.log("Game", gameId, "closed.")
 }
