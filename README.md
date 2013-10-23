@@ -1,6 +1,6 @@
 #Puzzle Fight
 
-[Puzzle Fight](http://puzzlefight.bradmcdermott.com) is a Rails based web app that allows the user to easily upload and share images.
+[Play Here](http://puzzlefight.bradmcdermott.com)
 
 ##A competitive online puzzle game built with Node.js
 * Created in JavaScript using the HTML5 Canvas.
