@@ -140,6 +140,7 @@ var startTouch = function () {
 }
 
 var startPractice = function(gameData) {
+	console.log("starting practice");
 	startTouch();
 	drawRounds();
     inPractice = true;
@@ -151,6 +152,7 @@ var startPractice = function(gameData) {
 };
 
 var startGame = function(gameData) {
+	console.log("starting game");
     inPractice = false;
     paused = false;
     firstPlayerRounds = 0;
@@ -174,6 +176,7 @@ var restartGame = function(queue) {
     //var aSuper = firstPlayer.superMeter;
     //var bPoints = secondPlayer.points;
     //var bSuper = secondPlayer.superMeter;
+	console.log("restarting game");
     if (playerNumber == 0) {
         firstPlayerRounds = queue.firstPlayerRounds;
         secondPlayerRounds = queue.secondPlayerRounds;
@@ -190,24 +193,6 @@ var restartGame = function(queue) {
     //secondPlayer.startGame();
 };
 
-// var startSpectating = function(data) {
-//     firstPlayerRounds = data.firstPlayerRounds;
-//     secondPlayerRounds = data.secondPlayerRounds;
-//     firstPlayerWins = data.firstPlayerWins;
-//     secondPlayerWins = data.secondPlayerWins;
-//     theQueue = new Queue(data.queue);
-//     drawRounds();
-//     notifySpec();
-// };
-
-// var restartSpectating = function(data) {
-//     firstPlayerRounds = data.firstPlayerRounds;
-//     secondPlayerRounds = data.secondPlayerRounds;
-//     firstPlayerWins = data.firstPlayerWins;
-//     secondPlayerWins = data.secondPlayerWins;
-//     theQueue = new Queue(data.queue);
-//     drawRounds();
-// };
 
 
 var sendBlocks = function(blocks) {

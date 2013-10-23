@@ -54,5 +54,5 @@ sio.configure(function (){
 //Socket.io will call this function when a client connects,
 sio.sockets.on('connection', function (client) {
 	console.log('\t socket.io:: player ' + client.id + ' connected');
-	gameControl.handleClientConnect(client);
+	gameControl.handleClientConnect(client, sio);
 }); //sio.sockets.on connection
