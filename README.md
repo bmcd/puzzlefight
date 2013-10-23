@@ -8,9 +8,9 @@
 * The back-end is a Node.js server running on Heroku.
 
 ##My first major project
-* Created while learning JavaScript from scratch.
+* Created while learning JavaScript.
 
-* Has been refactored numerous times as I have learned more about JavaScript best-practices.
+* Has been refactored numerous times as I have studied more about JavaScript best-practices.
 
 ##Gameplay
 * Similar to tetris, the player drops blocks into a grid and tries to make them disappear, which sends them to the other player
