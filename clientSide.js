@@ -18,9 +18,9 @@ socket.on('joinedGame', function(resp) {
     startPractice(resp.gameData);
 });
 
-socket.on('start', function(queue) {
+socket.on('start', function(data) {
 	console.log("in start");
-    startGame(queue);
+    startGame(data);
 });
 
 // socket.on('first', function(queue) {
@@ -33,8 +33,11 @@ socket.on('restart', function(queue) {
     restartGame(queue);
 });
 
-socket.on('reset', function() {
+socket.on('reset', function(data) {
     endGame();
+	if (data.queue) {
+		startPractice(data);
+	}
 });
 
 socket.on('pausePractice', function(data) {

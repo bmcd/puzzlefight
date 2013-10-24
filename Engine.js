@@ -199,10 +199,12 @@ var sendBlocks = function(blocks) {
     socket.emit('blocks', { number: blocks, playerNumber: playerNumber });
 };
 var endGame = function() {
+	console.log("here");
     if (safePause) {
+		console.log("ending game");
 	    clearTimeout(firstPlayer.timeout);
 	} else {
-	    setTimeout(endGame, 15);
+	    setTimeout(function() { endGame() }, 15);
 	};
 };
 

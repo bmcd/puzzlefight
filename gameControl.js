@@ -3,10 +3,12 @@ var _und = require("./underscore.js")
 
 var players = {};
 var games = {};
+var sio
 //for creating games
-var nextGameNumber = 1;
+var nextgameId = 1;
 
-exports.handleClientConnect = function(client, sio) {
+exports.handleClientConnect = function(client, theSio) {
+	sio = theSio;
 	client.emit('onconnected', {
 		id: client.id,
 	});
@@ -47,24 +49,24 @@ exports.handleClientConnect = function(client, sio) {
       } else if (games[client.gameId].paused && games[client.gameId].pausedId == client.id) {
           client.emit('unpauseGame', {});
           sio.sockets.socket(client.otherPlayer()).emit('unpauseGame', {});
-          games[client.gameNumber].paused = false;
+          games[client.gameId].paused = false;
       } else if (!games[client.gameId].paused) {
           sio.sockets.socket(client.otherPlayer()).emit('pauseGame', {});
           client.emit('pauseGame', {});
-          games[client.gameNumber].paused = true;
-          games[client.gameNumber].pausedId = client.id;
+          games[client.gameId].paused = true;
+          games[client.gameId].pausedId = client.id;
       };
   });
   // client.on('readyAgain', function () {
   //     if (client.playerNumber == 0) {
-  //         games[client.gameNumber].firstPlayerReady = true;
+  //         games[client.gameId].firstPlayerReady = true;
   //     } else if (client.playerNumber == 1) {
-  //         games[client.gameNumber].secondPlayerReady = true;
+  //         games[client.gameId].secondPlayerReady = true;
   //     };
-  //     if (games[client.gameNumber].firstPlayerReady && games[client.gameNumber].secondPlayerReady) {
-  //         games[client.gameNumber].ending = false;
-  //         games[client.gameNumber].firstPlayerReady = false;
-  //         games[client.gameNumber].secondPlayerReady = false;
+  //     if (games[client.gameId].firstPlayerReady && games[client.gameId].secondPlayerReady) {
+  //         games[client.gameId].ending = false;
+  //         games[client.gameId].firstPlayerReady = false;
+  //         games[client.gameId].secondPlayerReady = false;
   //     };
   // });
 
@@ -74,64 +76,50 @@ exports.handleClientConnect = function(client, sio) {
   //         if (!client.inLobby) {
   //             client.emit('pausePractice', {});
   //         };
-  //     } else if (games[client.gameNumber] != null && !games[client.gameNumber].paused && !client.spectating) {
-  //         sio.sockets.socket(client.otherPlayer).emit('pauseGame', {});
+  //     } else if (games[client.gameId] != null && !games[client.gameId].paused && !client.spectating) {
+  //         sio.sockets.socket(client.otherPlayer()).emit('pauseGame', {});
   //         client.emit('pauseGame', {});
-  //         games[client.gameNumber].paused = true;
-  //         games[client.gameNumber].pausedId = client.id;
+  //         games[client.gameId].paused = true;
+  //         games[client.gameId].pausedId = client.id;
   //     };
   // });
-  // //Receive lost message from client
-  // client.on('lost', function (loser) {
-  //   //checks to see if the game is currently ending in case of close finishes
-  //   if (games[client.gameNumber] != null && !games[client.gameNumber].ending) {
-  //     //sets the game state as ending to prevent double restarts
-  //     games[client.gameNumber].ending = true;
-  //     //pause both clients
-  //     //client.emit('reset', {} );
-  //     sio.sockets.socket(client.otherPlayer).emit('reset', {} );
-  //     //set up new queue for next game
-  //     var temp = new Queue();
-  //     games[client.gameNumber].queue = temp.queue;
-  //     //set rounds or win streak data send send start message to clients
-  //     console.log(client.playerNumber);
-  //     if (client.playerNumber == 0) {
-  //         games[client.gameNumber].secondPlayerRounds += 1;
-  //     } else {
-  //         games[client.gameNumber].firstPlayerRounds += 1;
-  //     }
-  //     if (games[client.gameNumber].firstPlayerRounds > 1) {
-  //         games[client.gameNumber].firstPlayerRounds = 0;
-  //         games[client.gameNumber].secondPlayerRounds = 0;
-  //         games[client.gameNumber].firstPlayerWins += 1;
-  //         games[client.gameNumber].secondPlayerWins = 0;
-  //         client.emit('start', games[client.gameNumber]);
-  //         sio.sockets.socket(client.otherPlayer).emit('start', games[client.gameNumber]);
-  //         var spec;
-  //         for (spec = 0; spec < games[client.gameNumber].spectators.length; spec++) {
-  //             sio.sockets.socket(games[client.gameNumber].spectators[spec]).emit('restartSpec', games[client.gameNumber]);
-  //         };
-  //     } else if (games[client.gameNumber].secondPlayerRounds > 1) {
-  //         games[client.gameNumber].firstPlayerRounds = 0;
-  //         games[client.gameNumber].secondPlayerRounds = 0;
-  //         games[client.gameNumber].firstPlayerWins = 0;
-  //         games[client.gameNumber].secondPlayerWins += 1;
-  //         client.emit('start', games[client.gameNumber]);
-  //         sio.sockets.socket(client.otherPlayer).emit('start', games[client.gameNumber]);
-  //         var spec;
-  //         for (spec = 0; spec < games[client.gameNumber].spectators.length; spec++) {
-  //             sio.sockets.socket(games[client.gameNumber].spectators[spec]).emit('restartSpec', games[client.gameNumber]);
-  //         };
-  //     } else {
-  //         client.emit('restart', games[client.gameNumber]);
-  //         sio.sockets.socket(client.otherPlayer).emit('restart', games[client.gameNumber]);
-  //         var spec;
-  //         for (spec = 0; spec < games[client.gameNumber].spectators.length; spec++) {
-  //             sio.sockets.socket(games[client.gameNumber].spectators[spec]).emit('restartSpec', games[client.gameNumber]);
-  //         };
-  //     };
-  //   };
-  // });
+  //Receive lost message from client
+  client.on('lost', function (loser) {
+    //checks to see if the game is currently ending in case of close finishes
+    if (!games[client.gameId].ending) {
+      //sets the game state as ending to prevent double restarts
+      games[client.gameId].ending = true;
+      //pause both clients
+      sio.sockets.socket(client.otherPlayer()).emit('reset', {} );
+      //set up new queue for next game
+      games[client.gameId].queue = new serverSide.Queue().queue;
+      //set rounds or win streak data send send start message to clients
+      if (client.playerNumber == 0) {
+          games[client.gameId].secondPlayerRounds += 1;
+      } else {
+          games[client.gameId].firstPlayerRounds += 1;
+      }
+      if (games[client.gameId].firstPlayerRounds > 1) {
+          games[client.gameId].firstPlayerRounds = 0;
+          games[client.gameId].secondPlayerRounds = 0;
+          games[client.gameId].firstPlayerWins += 1;
+          games[client.gameId].secondPlayerWins = 0;
+          client.emit('start', games[client.gameId]);
+          sio.sockets.socket(client.otherPlayer()).emit('start', games[client.gameId]);
+      } else if (games[client.gameId].secondPlayerRounds > 1) {
+          games[client.gameId].firstPlayerRounds = 0;
+          games[client.gameId].secondPlayerRounds = 0;
+          games[client.gameId].firstPlayerWins = 0;
+          games[client.gameId].secondPlayerWins += 1;
+          client.emit('start', games[client.gameId]);
+          sio.sockets.socket(client.otherPlayer()).emit('start', games[client.gameId]);
+      } else {
+          client.emit('restart', games[client.gameId]);
+          sio.sockets.socket(client.otherPlayer()).emit('restart', games[client.gameId]);
+      }
+	  games[client.gameId].ending = false;
+    };
+  });
 }
 
 function autoJoinGame(client) {
@@ -158,32 +146,36 @@ function joinGame(gameId, client) {
 		games[gameId].firstPlayer = client.id
 		games[gameId].players.push(client.id)
 		client.gameId = gameId;
+		client.playerNumber = 0;
 		client.otherPlayer = function() { return games[gameId].secondPlayer };
 		client.emit('joinedGame', {
 			gameId: gameId,
 			gameData: games[gameId],
-			playerNumber: 1
+			playerNumber: 0
 		});
 	} else if (!games[gameId].secondPlayer) {
 		games[gameId].secondPlayer = client.id
 		games[gameId].players.push(client.id)
 		client.gameId = gameId;
+		client.playerNumber = 1;
 		client.otherPlayer = function() { return games[gameId].firstPlayer };
 		client.emit('joinedGame', {
 			gameId: gameId,
 			gameData: games[gameId],
-			playerNumber: 2
+			playerNumber: 1
 		});
 	} else {
 		console.log("Join failed on", gameId, games[gameId]);
 		client.emit("message", { message: "Failed to join game" })
 	}
+	endGame(gameId);
+	startGame(gameId);
 }
 
 function createGame(client) {
 	console.log("In createGame");
-	var gameId = nextGameNumber.toString();
-	nextGameNumber += 1;
+	var gameId = nextgameId.toString();
+	nextgameId += 1;
 
 	games[gameId] = makeGameData(client.id, gameId);
 	console.log("Create Game " + gameId);
@@ -228,10 +220,27 @@ function leaveGame(client) {
 	console.log("Player", client.id, "has left game", gameId);
 	if (games[gameId].players.length === 0) {
 		closeGame(gameId);
+	} else {
+		endGame(gameId, new serverSide.Queue().queue);
+	}
+}
+
+function startGame(gameId) {
+	if (games[gameId].players.length === 2) {
+		games[gameId].queue = new serverSide.Queue().queue;
+		setTimeout(function() {
+			sio.sockets.socket(games[gameId].firstPlayer).emit("start", games[gameId]);
+			sio.sockets.socket(games[gameId].secondPlayer).emit("start", games[gameId]);
+		})
 	}
 }
 
 function closeGame(gameId) {
 	games[gameId] = null;
 	console.log("Game", gameId, "closed.")
+}
+
+function endGame(gameId, queue) {
+	sio.sockets.socket(games[gameId].firstPlayer).emit("reset", { queue: queue });
+	sio.sockets.socket(games[gameId].secondPlayer).emit("reset", { queue: queue });
 }
