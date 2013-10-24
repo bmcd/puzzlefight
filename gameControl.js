@@ -36,6 +36,25 @@ exports.handleClientConnect = function(client, sio) {
   client.on('lostPractice', function (loser) {
       client.emit('startPractice', { queue: new serverSide.Queue().queue });
   });
+
+  client.on('pause', function (sent) {
+      if (sent.practice) {
+          if (sent.paused) {
+              client.emit('unpausePractice', {});
+          } else {
+              client.emit('pausePractice', {});
+          };
+      } else if (games[client.gameId].paused && games[client.gameId].pausedId == client.id) {
+          client.emit('unpauseGame', {});
+          sio.sockets.socket(client.otherPlayer()).emit('unpauseGame', {});
+          games[client.gameNumber].paused = false;
+      } else if (!games[client.gameId].paused) {
+          sio.sockets.socket(client.otherPlayer()).emit('pauseGame', {});
+          client.emit('pauseGame', {});
+          games[client.gameNumber].paused = true;
+          games[client.gameNumber].pausedId = client.id;
+      };
+  });
   // client.on('readyAgain', function () {
   //     if (client.playerNumber == 0) {
   //         games[client.gameNumber].firstPlayerReady = true;
@@ -49,24 +68,7 @@ exports.handleClientConnect = function(client, sio) {
   //     };
   // });
 
-  // client.on('pause', function (sent) {
-  //     if (sent.practice) {
-  //         if (sent.paused) {
-  //             client.emit('unpausePractice', {});
-  //         } else {
-  //             client.emit('pausePractice', {});
-  //         };
-  //     } else if (games[client.gameNumber].paused && games[client.gameNumber].pausedId == client.id) {
-  //         client.emit('unpauseGame', {});
-  //         sio.sockets.socket(client.otherPlayer).emit('unpauseGame', {});
-  //         games[client.gameNumber].paused = false;
-  //     } else if (!games[client.gameNumber].paused && !client.spectating) {
-  //         sio.sockets.socket(client.otherPlayer).emit('pauseGame', {});
-  //         client.emit('pauseGame', {});
-  //         games[client.gameNumber].paused = true;
-  //         games[client.gameNumber].pausedId = client.id;
-  //     };
-  // });
+
   // client.on('tab', function (sent) {
   //     if (sent.practice && !sent.paused) {
   //         if (!client.inLobby) {

@@ -220,27 +220,35 @@ document.onkeydown = function(evt) {
     evt = evt || window.event;
     switch (evt.keyCode) {
         case 32: //space
+			evt.preventDefault();
             socket.emit('pause', { practice: inPractice, paused: paused });
             break;
         case 37: //left
+		    evt.preventDefault();
             firstPlayer.leftArrowPressed();
             break;
         case 38: //up
+		    evt.preventDefault();
             firstPlayer.upArrowPressed();
             break;
         case 39:  //right
+		    evt.preventDefault();
             firstPlayer.rightArrowPressed();
             break;
         case 66: //b
+		    evt.preventDefault();
             firstPlayer.useSuper();
             break;
         case 78: //n
+		    evt.preventDefault();
             firstPlayer.sKeyPressed();
             break;
         case 77: //m
+		    evt.preventDefault();
             firstPlayer.dKeyPressed();
             break;
         case 40: //down
+		    evt.preventDefault();
             firstPlayer.downArrowPressed();
             break;
     }
@@ -778,7 +786,7 @@ function Board(name, carryover, meter) {
         this.boat.reset(this.count);
         this.clearGrid();
         if (inPractice) {
-        	this.message = 'Click When Ready';
+        	this.message = 'Practice Mode';
         }
 		this.drawWaiting();
         this.drawBoat();
@@ -806,7 +814,7 @@ function Board(name, carryover, meter) {
         if (ready) {
             this.message = 'READY!';
         } else {
-            this.message = 'Click When Ready';
+            this.message = 'Practice Mode';
         };
         this.drawWaiting();
     };
@@ -936,7 +944,7 @@ function Board(name, carryover, meter) {
 	            if (ready) {
 	                this.message = 'READY!';
 	            } else {
-	                this.message = 'Click When Ready';
+	                this.message = 'Practice Mode';
 	            };
             }
 			if (this.waitingToSend > 0) {
