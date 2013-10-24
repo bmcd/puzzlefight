@@ -58,9 +58,7 @@ socket.on('unpauseGame', function(data) {
 socket.on('startPractice', function (data) {
     if (!inPractice) {
 		startPractice(data);
-	} else {
-		firstPlayer.drawBoat();
-	};
+	}
 });
 
 socket.on('incomingBlocks', function(blocks) {

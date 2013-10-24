@@ -32,6 +32,10 @@ exports.handleClientConnect = function(client, sio) {
   client.on('waiting', function (sent) {
       sio.sockets.socket(client.otherPlayer()).emit('waiting', sent);
   });
+
+  client.on('lostPractice', function (loser) {
+      client.emit('startPractice', { queue: new serverSide.Queue().queue });
+  });
   // client.on('readyAgain', function () {
   //     if (client.playerNumber == 0) {
   //         games[client.gameNumber].firstPlayerReady = true;
@@ -44,9 +48,7 @@ exports.handleClientConnect = function(client, sio) {
   //         games[client.gameNumber].secondPlayerReady = false;
   //     };
   // });
-  // client.on('lostPractice', function (loser) {
-  //     client.emit('startPractice', { practiceQueue: new Queue() });
-  // });
+
   // client.on('pause', function (sent) {
   //     if (sent.practice) {
   //         if (sent.paused) {
