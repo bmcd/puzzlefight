@@ -13,7 +13,7 @@ exports.handleClientConnect = function(client, theSio) {
 		id: client.id,
 	});
 
-	autoJoinGame(client);
+
 
 	client.on('disconnect', function () {
 		if (client.gameId) {
@@ -21,6 +21,10 @@ exports.handleClientConnect = function(client, theSio) {
 		}
 		console.log("Player", client.id, "has left the server.")
 	});
+
+	client.on('autoJoin', function() {
+		autoJoinGame(client);
+	})
 
   client.on('blocks', function (blocks) {
       sio.sockets.socket(client.otherPlayer()).emit('incomingBlocks', blocks);
@@ -236,7 +240,7 @@ function startGame(gameId) {
 }
 
 function closeGame(gameId) {
-	games[gameId] = null;
+	delete games[gameId];
 	console.log("Game", gameId, "closed.")
 }
 

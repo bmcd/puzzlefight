@@ -13,3 +13,11 @@
 opponent = new Opponent('B');
 firstPlayer = new Opponent('A');
 secondPlayer = new Opponent('B');
+
+$(document).ready(function() {
+	$(".auto-join").on("click", function(event) {
+		$(this).html("Joining...");
+		$(this).off("click");
+		socket.emit("autoJoin", {});
+	});
+})

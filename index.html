@@ -3,6 +3,8 @@
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 	<meta name="viewport" id='main' content="width=1160, user-scalable=0" />
   <title>Puzzle Fight</title>
+	<link rel="stylesheet" href="stylesheet.css" type="text/css" media="screen" title="no title" charset="utf-8">
+	<link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
 
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
   <script src="Engine.js"></script>
@@ -14,6 +16,40 @@
 
 </head>
 <body bgcolor="#2c3e50" width="1160">
+	<div class="instructions">
+		<div class="instructions-box">
+			<h1>Welcome to Puzzle Fight</h1>
+			<p>Puzzle Fight is a competitive Tetris-like puzzle game for two players. It was built using Javascript and the HTML5 Canvas, with a Node.js back-end for online play.</p>
+			<img src="images/breaker_screen.png">
+			<p>The goal is to fill up your opponent's screen by eliminating blocks on your side. Land a circle "breaker" next to a group of blocks of the same color to destroy them all and send them over to your opponent's board. Don't let your screen fill up!</p>
+			<div class="key-box group">
+				<div class="key-row">
+					<img src="images/leftkey.png">
+					<img src="images/downkey.png">
+					<img src="images/rightkey.png">
+					<p>Move</p>
+				</div>
+				<div class="key-row">
+					<img src="images/nkey.png">
+					<img src="images/mkey.png">
+					<p>Rotate</p>
+				</div>
+				<div class="key-row">
+					<img src="images/upkey.png">
+					<p>Quickdrop</p>
+				</div>
+				<div class="key-row">
+					<img class="spacebar" src="images/spacekey.png">
+					<p>Pause</p>
+				</div>
+				<div class="key-row">
+					<img src="images/bkey.png">
+					<p>Super</p>
+				</div>
+			</div>
+			<div class="auto-join">Auto Join</div>
+		</div>
+	</div>
 	<canvas id="background" width="1160" height="680" style="position: absolute; background: #2c3e50;"></canvas>
 	<canvas id="playerA" width="320" height="530" style="position: absolute; left: 100px; top: 30px; background: url(images/transpBlack75.png);"></canvas>
 	<canvas id="playerB" width="320" height="530" style="position: absolute; left: 740px; top: 30px; background: url(images/transpBlack75.png);"></canvas>

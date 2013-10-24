@@ -13,6 +13,7 @@ socket.on('onconnected', function( data ) {
 socket.on('joinedGame', function(resp) {
 	//
     console.log("in joinedGame");
+	$(".instructions").remove();
     // clearLobby();
     playerNumber = resp.gameData.playerNumber;
     startPractice(resp.gameData);
