@@ -6,7 +6,7 @@ var
 	server          = require('http').Server(app),
 	io              = require('socket.io'),
 
-	gameControl     = require("./gameControl.js"),
+	gameControl     = require("./lib/gameControl.js"),
 
 	verbose         = false;
 var exec = require('child_process').exec
